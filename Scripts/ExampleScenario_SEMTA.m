@@ -99,18 +99,18 @@ scenario.simsetup = struct( ...
     ... % Waveform Properties
     'f_c',      9.525e9, ...            % Operating frequency in Hz
     'f_s',      50e6, ...               % ADC sample frequency in Hz
-    't_p',      20e-6, ...             % Chirp duration in seconds
+    't_p',      20e-6, ...              % Chirp duration in seconds
     'n_ch',     13, ...                 % Number of chips per pulse
     'prf',      10e3, ...               % Pulse repetition frequency in Hz
     'n_p',      512, ...                % Number of pulses to simulate
     'cpi_fr',   10, ...                 % Number of CPI per frame
     ...
     ... % Transceiver Properties
-    'n_ant',        16, ...              % Number of elements in antenna array
+    'n_ant',        16, ...             % Number of elements in antenna array
     'tx_pow',       4, ...              % Transmit power in Watts
-    'tx_ant_gain',  0, ...             % Tx antenna gain in dBi (N/A?)
-    'rx_sys_gain',  -4, ...              % Rx system gain in dB (N/A?)
-    'rx_nf',        2.7, ...              % Rx noise figure in dB
+    'tx_ant_gain',  0, ...              % Tx antenna gain in dBi (N/A?)
+    'rx_sys_gain',  -4, ...             % Rx system gain in dB (N/A?)
+    'rx_nf',        2.7, ...            % Rx noise figure in dB
     'rx_ant_gain',  27, ...             % Rx antenna gain in dBi (N/A?)
     ...
     ... % Processing Properties
