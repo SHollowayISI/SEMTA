@@ -5,6 +5,7 @@ classdef RadarScenario < handle
         multi
         rcs
         traj
+        radarsetup
         simsetup
         sim
         rx_sig
