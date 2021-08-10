@@ -16,7 +16,7 @@ lambda = c/radarsetup.f_c;
 %% Perform Range Matched Filter
 
 % Calculate FFT size
-N_r = 2^ceil(log2(size(scenario.rx_sig, 1)));
+N_r = size(scenario.rx_sig, 1);
 
 % Perform correlation processing on received signal
 cube.range_cube = ifft(fft(scenario.rx_sig, N_r, 1) .* conj(fft(sim.waveform(), N_r, 1)));

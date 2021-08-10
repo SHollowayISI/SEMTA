@@ -10,7 +10,7 @@
     TODO: Code review & rebuild
     TODO:
         - List out multiple targets found
-        - Bit resolution for phase shifter
+        - 
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

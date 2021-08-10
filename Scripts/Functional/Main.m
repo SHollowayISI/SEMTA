@@ -77,13 +77,13 @@ end
 % viewDetections(scenario);
 
 % View SNR of each radar unit
-viewSNR(scenario);
+% viewSNR(scenario);
 
 
 %% Multistatic Processing
 
 % Perform multilateration on list of detected targets
-scenario.multi = MultistaticProcessing(scenario);
+% scenario.multi = MultistaticProcessing(scenario);
 
 % Perform smoothing on multilaterated target coordinates
 % scenario.multi = TargetTracking(scenario);

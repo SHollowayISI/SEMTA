@@ -26,7 +26,7 @@ nm = 1852;
 
 % Locations of radar units
 radar_pos = ...
-    [-995.3; 0; 0];
+    [-2000; 0; 0];
 
 % Multistatic properties
 scenario.multi = struct( ...

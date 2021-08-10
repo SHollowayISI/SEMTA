@@ -34,8 +34,11 @@ t_st = radarsetup.n_p * radarsetup.cpi_fr * (flags.frame - 1);
 tx_pos = multi.radar_pos(:,flags.unit);
 tx_vel = [0; 0; 0];
 
+% Set up initial target position and velocity
+tgt_pos = traj.pos(traj, t_st);
 
-%% Simulation
+
+%% Start of Simulation Tasks
 
 % Generate the pulse
 tx_sig = sim.waveform();
@@ -43,50 +46,39 @@ tx_sig = sim.waveform();
 % Transmit the pulse. Output transmitter status
 [tx_sig,tx_status] = sim.transmitter(tx_sig);
 
-for chirp = 1:radarsetup.n_p
-    
-    % Update the target position
-%     tgt_pos = traj.pos(:, chirp + t_st);
-%     tgt_vel = traj.vel(:, chirp + t_st);
-    
-    %PLACEHOLDER
-    tgt_pos = [0; 0; 0];
-    tgt_vel = [0; 0; 0];
+% Calculate initial steering angle
+[~, tgt_ang] = rangeangle(tgt_pos, tx_pos);
+
+% Calculate steering vectors
+Tx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
+    -1*tgt_ang(1));
+Rx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
+    -1*[tgt_ang(1) + radarsetup.beamwidth/2, tgt_ang(1) - radarsetup.beamwidth/2]);
+
+
+%% Main Simulation Loop
+
+% Loop over chirps
+for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
+
+    % Calculate target position and velocity
+    tgt_pos = traj.pos(traj, t_st + ((chirp-1) / radarsetup.prf));
+    tgt_vel = traj.vel(traj, t_st + ((chirp-1) / radarsetup.prf));
 
     % Get the range and angle to the target
     [~,tgt_ang] = rangeangle(tgt_pos,tx_pos);
     
-    % Steer beam towards target
-    if ((chirp == 1) && (radarsetup.n_ant > 1))
-        steering_angle = -1*tgt_ang;
-        sv = steervec(getElementPosition(sim.sub_array)/lambda, steering_angle(1));
-        sim.sub_array.Taper = sv;
-        
-        sim.radiator = phased.Radiator( ...
-            'Sensor',                   sim.array, ...
-            'PropagationSpeed',         c, ...
-            'OperatingFrequency',       radarsetup.f_c, ...
-            'CombineRadiatedSignals',   true);
-        
-        sim.collector = phased.Collector( ...
-            'Sensor',                   sim.array, ...
-            'PropagationSpeed',         c, ...
-            'OperatingFrequency',       radarsetup.f_c, ...
-            'Wavefront',                'Plane');
-    end
-    
     % Radiate the pulse toward the target
-    sig = sim.radiator(tx_sig,tgt_ang);
+    sig = sim.radiator(tx_sig, tgt_ang, Tx_steer);
     
     % Propagate the pulse to the target and back in free space
     sig = sim.target_chan(sig,tx_pos,tgt_pos,tx_vel,tgt_vel);
     
     % Reflect the pulse off the target
-    ang_idx = round(tgt_ang(2)/rcs.res_a)+(length(rcs.ang)+1)/2;
-    sig = sim.target(sig, rcs.value(ang_idx));
+    sig = sim.target(sig, rcs.evaluate(rcs, tgt_ang(1), radarsetup.f_c));
     
     % Collect the echo from the incident angle at the antenna
-    sig = sim.collector(sig,tgt_ang);
+    sig = sim.collector(sig,tgt_ang, Rx_steer);
     
     % Reshape signal to fast time x slow time
     sig = sim.receiver(sig, ~tx_status);
@@ -94,9 +86,9 @@ for chirp = 1:radarsetup.n_p
     % Receive the echo at the antenna when not transmitting
     rx_sig(:,chirp,:) = sig;
     
-    
 end
 
+% Pack variables for output
 scenario_out.sim = sim;
 scenario_out.rx_sig = rx_sig;
 
