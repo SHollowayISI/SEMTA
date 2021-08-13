@@ -79,6 +79,7 @@ track_mode = struct( ...
 
 % Ideal (debug) track mode properties
 ideal_track_mode = struct( ...
+    'init_angle',   0, ...              % Initial angle (unused)
     'int_type',     'binary');          % Integration type for ideal track mode
 
 % Add to data structure

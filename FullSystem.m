@@ -7,10 +7,10 @@
 
     This shell file runs successive scripts and gauges progress.
 
-    TODO: Code review & rebuild
     TODO:
         - Single unit tracking
         - Incoherent integration
+        - Multistatic processing
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

@@ -64,8 +64,8 @@ switch mode
                 % Search for highest SNR detection
                 [~, max_ind] = max(det_list.SNR);
                 
-                % Update using previous angle and monopulse angle
-                angle_out = last_angle + det_list.az(max_ind);
+                % Update using previous monopulse angle
+                angle_out = det_list.az(max_ind);
             else
                 
                 % Use previous angle

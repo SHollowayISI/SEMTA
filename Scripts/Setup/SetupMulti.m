@@ -19,7 +19,7 @@ nm = 1852;
 %% Multistatic Scenario Setup
 
 % Locations of radar units
-num_receivers = 1;
+num_receivers = 3;
 % radar_pos = ...
 %     [-0.5 * nm * ones(1,num_receivers); ...    % Constant x location
 %      0.25 * nm * ((0:(num_receivers-1))); ...  % Incremental y distance

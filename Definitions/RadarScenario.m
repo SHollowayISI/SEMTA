@@ -219,7 +219,7 @@ classdef RadarScenario < handle
                         CalculateSNR(rs));
                 end
             else
-                disp('\nNo target detected.');
+                fprintf('\nNo target detected.\n');
                 fprintf('Ideal SNR: \t%0.1f dB\n', ...
                     CalculateSNR(rs));
             end
@@ -264,6 +264,12 @@ classdef RadarScenario < handle
                 
                 
             end
+        end
+        
+        function unitReset(rs)
+            % Reset mode flag and initial angle
+            rs.flags.mode = rs.radarsetup.initial_mode;
+            rs.radarsetup.int_type = rs.radarsetup.modes.(rs.radarsetup.initial_mode).int_type;
         end
         
         function viewMultilateration(RadarScenario)
@@ -363,7 +369,7 @@ classdef RadarScenario < handle
                 nan(rs.multi.n_fr, rs.multi.n_re);
             rs.multi.steering_angle = ...
                 nan(rs.multi.n_fr, rs.multi.n_re);
-            rs.multi.steering_aoa = ...
+            rs.multi.aoa = ...
                 nan(rs.multi.n_fr, rs.multi.n_re);
             rs.multi.mode = ...
                 {nan(rs.multi.n_fr, rs.multi.n_re)};
@@ -407,6 +413,7 @@ classdef RadarScenario < handle
             switch rep_method
                 case 'frames'
                     if mod(loops_complete, repetition) == 1
+                        disp('');
                         disp(message_p);
                         disp(message_t);
                         disp('');
@@ -415,6 +422,7 @@ classdef RadarScenario < handle
                 case 'time'
                     if ((rs.timing.timeGate == 0) || ...
                             (toc > repetition + rs.timing.timeGate))
+                        disp('');
                         disp(message_p);
                         disp(message_t);
                         disp('');
