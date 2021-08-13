@@ -1,7 +1,13 @@
-function [scenario] = ModeCheck(scenario)
+function [scenario] = ModeCheck(scenario, readout)
 %MODECHECK Checks for radar mode change
 %   Determines if system should change from one radar mode 
 %   (such as search, track, idle) to another
+
+%% Default Variable Values
+
+if ~exist('readout', 'var')
+    readout = true;
+end
 
 %% Unpack Variables
 
@@ -37,6 +43,16 @@ switch current_mode
             changed_mode = true;
             new_mode = mode_vars.track.fallback;
         end
+end
+
+%% Read Out Update
+
+if readout
+    if changed_mode
+        fprintf('Switching from %s mode to %s mode.\n', current_mode, new_mode);
+    else
+        fprintf('Radar will remain in %s mode.\n', current_mode);
+    end
 end
 
 %% Update Scenario Object To New Variables

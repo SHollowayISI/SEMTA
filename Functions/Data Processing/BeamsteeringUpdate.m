@@ -3,6 +3,12 @@ function [angle_out] = BeamsteeringUpdate(scenario, readout)
 %   Calculate new beam steering angle, depending on detections and 
 %   current radar mode.
 
+%% Default Variable Values
+
+if ~exist('readout', 'var')
+    readout = true;
+end
+
 %% Unpack Variables
 
 rs = scenario.radarsetup;

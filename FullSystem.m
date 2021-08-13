@@ -11,7 +11,6 @@
     TODO:
         - Single unit tracking
         - Incoherent integration
-        - Search mode vs track mode vs wait mode settings
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

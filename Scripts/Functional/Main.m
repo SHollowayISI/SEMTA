@@ -56,7 +56,7 @@ for unit = 1:scenario.multi.n_re
         storeMulti(scenario);
         
         % Check for mode changes
-        scenario = ModeCheck(scenario);
+        scenario = ModeCheck(scenario, true);
         
         %% Read Out Progress
         
