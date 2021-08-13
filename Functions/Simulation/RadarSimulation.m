@@ -34,9 +34,6 @@ t_st = radarsetup.frame_time * (flags.frame - 1);
 tx_pos = multi.radar_pos(:,flags.unit);
 tx_vel = [0; 0; 0];
 
-% Set up initial target position and velocity
-tgt_pos = traj.pos(traj, t_st);
-
 
 %% Start of Simulation Tasks
 
@@ -47,14 +44,13 @@ tx_sig = sim.waveform();
 [tx_sig,tx_status] = sim.transmitter(tx_sig);
 
 % Calculate initial steering angle
-[~, tgt_ang] = rangeangle(tgt_pos, tx_pos);
-multi.steering_angle(flags.frame, flags.unit) = tgt_ang(1);
+st_ang = multi.steering_angle(flags.frame, flags.unit);
 
 % Calculate steering vectors
 Tx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
-    -1*tgt_ang(1), radarsetup.phase_bits);
+    -1*st_ang, radarsetup.phase_bits);
 Rx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
-    -1*[tgt_ang(1) + radarsetup.beamwidth/2, tgt_ang(1) - radarsetup.beamwidth/2], ...
+    -1*[st_ang + radarsetup.beamwidth/2, st_ang - radarsetup.beamwidth/2], ...
     radarsetup.phase_bits);
 
 

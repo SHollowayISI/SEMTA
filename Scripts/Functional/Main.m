@@ -29,6 +29,11 @@ for unit = 1:scenario.multi.n_re
         % Set current frame flag
         scenario.flags.frame = frame;
         
+        %% Beam Steering Setup
+        
+        % Set beam steering direction
+        scenario.multi.steering_angle(frame, unit) = BeamsteeringUpdate(scenario, true);
+        
         %% Radar Simulation (Single frame)
         
         % Run simulation to retrieve fast time x slow time Rx signal
@@ -44,13 +49,19 @@ for unit = 1:scenario.multi.n_re
         % Perform radar detection
         scenario.detection = Detection(scenario);
         
-        %% Save Multistatic Information
-        
-        % Read out target information
-        readOut(scenario);
+        % Perform single unit tracking
+        %TODO        
         
         % Store and clear target information
         storeMulti(scenario);
+        
+        % Check for mode changes
+        scenario = ModeCheck(scenario);
+        
+        %% Read Out Progress
+        
+        % Read out target information
+        readOut(scenario);
         
         % Read out current progress in simulation
         frameUpdate(scenario, 1);
@@ -67,11 +78,11 @@ end
 
 %% Visualize Monostatic Results
 
-% View Range-Doppler heat map
-% viewRDCube(scenario, 'heatmap')
+% View Range-Slow Time heat map
+% viewRangeCube(scenario);
 
-% View Range-Doppler surface
-% viewRDCube(scenario, 'surface')
+% View Range-Doppler heat map
+% viewRDCube(scenario);
 
 % View radar detections
 % viewDetections(scenario);
