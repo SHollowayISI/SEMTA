@@ -1,0 +1,9 @@
+- 5degree step for search mode
+- One way scan for search mode
+- Additional wait mode, pointed broadside
+- 30m altitude for target
+- Vertical angle of 0degree for array
+
+- Send graphical flow to Victor this week
+- Send error report next week
+- Quarterly report due to customer 9/15

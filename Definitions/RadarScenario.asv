@@ -26,7 +26,7 @@ classdef RadarScenario < handle
             xlabel('Frequency [Hz]','FontWeight','bold');
             ylabel('RCS [dBm^2]','FontWeight','bold');
             set(gca, 'XLim', rs.rcs.freq([1 end]));
-            set(gca, 'YLim', [rs.rcs.ave_rcs-20, max(rs.rcs.ave_rcs+10, rs.rcs.peak_rcs+10)]);
+            set(gca, 'YLim', [rs.rcs.ave_rcs-20, max(rs.rcs.ave_rcs+10, rs.rc]);
         end
         
         function viewRCSAng(rs)
@@ -40,7 +40,7 @@ classdef RadarScenario < handle
             xlabel('Aspect Angle (degree)','FontWeight','bold');
             ylabel('RCS [dBm^2]','FontWeight','bold');
             set(gca, 'XLim', [-180, 180]);
-            set(gca, 'YLim', [rs.rcs.ave_rcs-20, max(rs.rcs.ave_rcs+10, rs.rcs.peak_rcs+10)]);
+            set(gca, 'YLim', [rs.rcs.ave_rcs-20, rs.rcs.ave_rcs+10]);
             
             subplot(122)
             polarplot(rs.rcs.ang*(pi/180),...
@@ -49,7 +49,7 @@ classdef RadarScenario < handle
             pax = gca;
             pax.ThetaZeroLocation = 'top';
             pax.ThetaGrid = 'on';
-            pax.RLim = [rs.rcs.ave_rcs-20, max(rs.rcs.ave_rcs+10, rs.rcs.peak_rcs+10)];
+            pax.RLim = [rs.rcs.ave_rcs-20, rs.rcs.ave_rcs+10];
         end
         
         function viewTraj(rs)

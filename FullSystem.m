@@ -9,8 +9,10 @@
 
     TODO: Code review & rebuild
     TODO:
-        - List out multiple targets found
-        - Bit resolution for phase shifter
+        - Single unit tracking
+        - Phase adjustment
+        - Incoherent integration
+        - Search mode vs track mode vs wait mode settings
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

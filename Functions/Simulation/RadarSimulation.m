@@ -28,7 +28,7 @@ n_samples = radarsetup.f_s*pri;
 rx_sig = zeros(n_samples, radarsetup.n_p*radarsetup.cpi_fr, 2);
 
 % Set up start time
-t_st = radarsetup.n_p * radarsetup.cpi_fr * (flags.frame - 1);
+t_st = radarsetup.frame_time * (flags.frame - 1);
     
 % Set radar position and velocity
 tx_pos = multi.radar_pos(:,flags.unit);
@@ -48,12 +48,14 @@ tx_sig = sim.waveform();
 
 % Calculate initial steering angle
 [~, tgt_ang] = rangeangle(tgt_pos, tx_pos);
+multi.steering_angle(flags.frame, flags.unit) = tgt_ang(1);
 
 % Calculate steering vectors
 Tx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
-    -1*tgt_ang(1));
+    -1*tgt_ang(1), radarsetup.phase_bits);
 Rx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
-    -1*[tgt_ang(1) + radarsetup.beamwidth/2, tgt_ang(1) - radarsetup.beamwidth/2]);
+    -1*[tgt_ang(1) + radarsetup.beamwidth/2, tgt_ang(1) - radarsetup.beamwidth/2], ...
+    radarsetup.phase_bits);
 
 
 %% Main Simulation Loop
@@ -62,8 +64,8 @@ Rx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...
 for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
 
     % Calculate target position and velocity
-    tgt_pos = traj.pos(traj, t_st + ((chirp-1) / radarsetup.prf));
-    tgt_vel = traj.vel(traj, t_st + ((chirp-1) / radarsetup.prf));
+    tgt_pos = traj.pos(traj, t_st + ((chirp-1) * radarsetup.pri));
+    tgt_vel = traj.vel(traj, t_st + ((chirp-1) * radarsetup.pri));
 
     % Get the range and angle to the target
     [~,tgt_ang] = rangeangle(tgt_pos,tx_pos);
@@ -91,6 +93,7 @@ end
 % Pack variables for output
 scenario_out.sim = sim;
 scenario_out.rx_sig = rx_sig;
+scenario_out.multi = multi;
 
 end
 

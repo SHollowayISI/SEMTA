@@ -27,13 +27,14 @@ scenario.radarsetup = struct( ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
     'tx_pow',       4, ...              % Transmit power in Watts per channel
-    'rx_sys_gain',  -1.953, ...         % Rx system gain in dB 
+    'rx_sys_gain',  -1.8922, ...        % Rx system gain in dB 
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
-    'tx_sys_gain',  -1.953, ...         % Tx system gain in dB 
+    'tx_sys_gain',  -1.8922, ...        % Tx system gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
     'beamwidth',    7, ...              % Antenna beamwidth in degrees
     'mono_coeff',   -1.8921, ...        % Coefficient in monopulse AoA linear approximation
+    'phase_bits',   6, ...              % Number of bits for phase shifter resolution Nbits = log2(360/resolution)
     ...
     ... % Processing Properties
     'win_type',     'blackmanharris', ...   % Type of window for doppler processing

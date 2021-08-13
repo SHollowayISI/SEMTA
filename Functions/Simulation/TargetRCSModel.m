@@ -54,6 +54,22 @@ if strcmp(rcs_in.rcs_model, 'model')
     % Normalize to correct target average RCS value
     rcs_out.rcs_array = t_rcs * total_rcs ./ mean(total_rcs,2);
     
+    % Model specular reflection from missile broadside
+    if rcs_out.specular_on
+        
+        % Calculate curve parameters
+        n = -log(rcs_out.theta_zero / rcs_out.theta_ave) / ...
+            log(1 - (rcs_out.ave_rcs / rcs_out.peak_rcs));
+        k = rcs_out.theta_zero / ((rcs_out.peak_rcs * log(10) / 10) ^ n);
+
+        % Generate curves
+        peak_curve = db2pow(rcs_out.peak_rcs) * exp(-abs((rcs_out.ang - 90) / k).^(1 / n));
+        peak_curve = peak_curve + flip(peak_curve);
+        
+        % Add RCS to statistical model
+        rcs_out.rcs_array = rcs_out.rcs_array + peak_curve';
+    end
+    
     % Generate arrays of frequencies and angles for interpolation coords
     [rcs_out.freq_array, rcs_out.ang_array] = meshgrid(rcs_out.freq, rcs_out.ang);
     

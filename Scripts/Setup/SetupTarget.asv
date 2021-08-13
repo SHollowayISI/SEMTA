@@ -17,8 +17,8 @@
 scenario.rcs = struct( ...
     ...
     ... % RCS options
-    'rcs_model',    'model', ...        % Set 'model' or 'constant'
-    'ave_rcs',      -20, ...            % Target RCS in dBm^2
+    'rcs_model',    'model', ...     % Set 'model' or 'constant'
+    'ave_rcs',      -20, ...              % Target RCS in dBm^2
     ...
     ... % Model options
     'dim',      [6; 3; 0], ...          % [x; y; z] size of target
@@ -28,9 +28,6 @@ scenario.rcs = struct( ...
     ...
     ... % Broadside specular options
     'specular_on',  true, ...           % T/F Model broadside specular
-    'theta_zero',   2, ...              % Angle at which spec. response is 1m^2
-    'theta_ave',    30, ...             % Angle at which spec. meets statistical level
-    'peak_rcs',     15);                % RCS at broadside specular peak
 
 % Run RCS model
 scenario.rcs = TargetRCSModel(scenario.rcs);

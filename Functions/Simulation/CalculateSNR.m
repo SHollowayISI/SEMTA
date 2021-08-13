@@ -13,8 +13,9 @@ if ~exist('RCS', 'var')
 end
 
 if ~exist('Range', 'var')
-    %TODO: UPDATE WITH TRAJECTORY
-    Range = sqrt(sum((scenario.traj.pos_st - scenario.multi.radar_pos).^2));
+    current_time = (scenario.flags.frame-1) * scenario.radarsetup.frame_time;
+    current_position = scenario.traj.pos(scenario.traj, current_time);
+    Range = sqrt(sum((current_position - scenario.multi.radar_pos(:,scenario.flags.unit)).^2));
 end
 
 %% Calculate SNR
