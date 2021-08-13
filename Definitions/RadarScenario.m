@@ -219,7 +219,7 @@ classdef RadarScenario < handle
                         CalculateSNR(rs));
                 end
             else
-                disp('No target detected.');
+                disp('\nNo target detected.');
                 fprintf('Ideal SNR: \t%0.1f dB\n', ...
                     CalculateSNR(rs));
             end
@@ -235,8 +235,8 @@ classdef RadarScenario < handle
                 RadarScenario.detection.detect_logical;
             
             % Save radar mode
-            RadarScenario.multi.mode( ...
-                RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
+            RadarScenario.multi.mode{ ...
+                RadarScenario.flags.frame, RadarScenario.flags.unit} = ...
                 RadarScenario.flags.mode;
             
             % If target is detected, save range and velocity to target
@@ -365,6 +365,9 @@ classdef RadarScenario < handle
                 nan(rs.multi.n_fr, rs.multi.n_re);
             rs.multi.steering_aoa = ...
                 nan(rs.multi.n_fr, rs.multi.n_re);
+            rs.multi.mode = ...
+                {nan(rs.multi.n_fr, rs.multi.n_re)};
+                
             
         end
         

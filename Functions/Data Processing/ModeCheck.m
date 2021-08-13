@@ -51,7 +51,7 @@ if readout
     if changed_mode
         fprintf('Switching from %s mode to %s mode.\n', current_mode, new_mode);
     else
-        fprintf('Radar will remain in %s mode.\n', current_mode);
+        fprintf('Unit will remain in %s mode.\n', current_mode);
     end
 end
 
@@ -64,6 +64,6 @@ if changed_mode
     
     % Update variables in radarsetup
     %PLACEHOLDER: Systematically update variables?
-    scenario.radarsetup.int_type = mode_vars(new_mode).int_type;
+    scenario.radarsetup.int_type = mode_vars.(new_mode).int_type;
 end
 
