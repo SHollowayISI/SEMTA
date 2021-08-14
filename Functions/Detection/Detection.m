@@ -34,10 +34,25 @@ if strcmp(radarsetup.detect_type, 'CFAR')
             cfar_indices_d = (pad(2)+1):(pad(2)+length(dop_ax));
 end
 
+
+% Branch depending on integration type
+switch radarsetup.int_type
+    case 'binary'
+        num_loops = radarsetup.cpi_fr;
+    case 'incoherent'
+        num_loops = 1;
+end
+
 % Loop across CPIs
-for cpi = 1:radarsetup.cpi_fr
+for loop = 1:num_loops
     
-    rd_cube = sum(cube.pow_cube(:,:,cpi,:), 4);
+    % Branch depending on integration type
+    switch radarsetup.int_type
+        case 'binary'
+            rd_cube = sum(cube.pow_cube(:,:,loop,:), 4);
+        case 'incoherent'
+            rd_cube = sum(cube.pow_cube, [3 4]);
+    end
     
     switch radarsetup.detect_type
         case 'threshold'
@@ -47,7 +62,7 @@ for cpi = 1:radarsetup.cpi_fr
             abs_thresh = db2pow(radarsetup.thresh + detection.noise_pow);
             
             % Perform detection
-            detection.detect_cube(:,:,cpi) = (rd_cube > abs_thresh);
+            detection.detect_cube(:,:,loop) = (rd_cube > abs_thresh);
             
         case 'CFAR'
             %% Perform CFAR Detection
@@ -56,33 +71,44 @@ for cpi = 1:radarsetup.cpi_fr
             cfar_out = scenario.sim.CFAR(rd_cube, idx);
             
             % Save detection cube
-            detection.detect_cube(cfar_indices_r,cfar_indices_d,cpi) = reshape(cfar_out, length(rng_ax), length(dop_ax));          
+            detection.detect_cube(cfar_indices_r,cfar_indices_d,loop) = reshape(cfar_out, length(rng_ax), length(dop_ax));          
             
     end
+    
+    %% Binary Integration
+    switch radarsetup.int_type
+        case 'binary'
+            % Total up number of detection hits
+            count_cube = sum(detection.detect_cube, 3);
+
+            % Perform binary m-of-n integration
+            detection.int_detect_cube = logical(count_cube >= radarsetup.det_m);
+
+            % Generate cube of average power for multiple-detection indices
+            avg_cube = squeeze((detection.int_detect_cube .* sum(detection.detect_cube .* cube.pow_cube, 3)) ./ count_cube);
+            
+        case 'incoherent'
+            % Use CFAR result for integrated cube
+            detection.int_detect_cube = detection.detect_cube;
+            
+            % Generate power cube
+            avg_cube = detection.int_detect_cube .* rd_cube;
 end
 
 %% Calculate properties of detection
 
-% Total up number of detection hits
-count_cube = sum(detection.detect_cube, 3);
-
-% Perform binary m-of-n integration
-detection.cfar_detect_cube = logical(count_cube >= radarsetup.det_m);
-
-% Generate cube of average power for multiple-detection indices
-avg_cube = squeeze((detection.cfar_detect_cube .* sum(detection.detect_cube .* cube.pow_cube, 3)) ./ count_cube);
 sum_cube = sum(avg_cube, 3);
 mono_sum_cube = sum(sqrt(avg_cube), 3);
 mono_diff_cube = diff(sqrt(avg_cube), 1, 3);
 ratio_cube = mono_diff_cube ./ mono_sum_cube;
 
 % Determine if any target is detected
-detection.detect_logical = any(detection.cfar_detect_cube > 0, 'all');
+detection.detect_logical = any(detection.int_detect_cube > 0, 'all');
 
 %% Estimate Target Coordinates
 
 % Find connected objects in R-D cube
-cc = bwconncomp(detection.cfar_detect_cube);
+cc = bwconncomp(detection.int_detect_cube);
 regions = regionprops(cc, sum_cube, 'WeightedCentroid');
 
 % Generate list of detection coordinates

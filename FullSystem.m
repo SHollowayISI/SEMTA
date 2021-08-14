@@ -8,7 +8,6 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - Incoherent integration
         - Multistatic processing
 
 

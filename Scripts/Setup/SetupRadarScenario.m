@@ -22,7 +22,7 @@ scenario.radarsetup = struct( ...
     'bw',       10e6, ...               % Bandwidth of chirp
     'prf',      20e3, ...               % Pulse repetition frequency in Hz
     'n_p',      1024, ...               % Number of pulses to simulate
-    'cpi_fr',   1, ...                  % Number of CPI per frame
+    'cpi_fr',   5, ...                  % Number of CPI per frame
     ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
@@ -46,7 +46,7 @@ scenario.radarsetup = struct( ...
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
     'num_guard',    [3 3], ...          % Number of R-D guard cells for CFAR detection
     'num_train',    [15 2], ...         % Number of R-D training cells for CFAR detection
-    'det_m',        1);                 % M for m-of-n processing
+    'det_m',        2);                 % M for m-of-n processing
 
 % Tracking Parameters
 tracking = struct( ...
