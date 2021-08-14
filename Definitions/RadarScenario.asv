@@ -203,43 +203,16 @@ classdef RadarScenario < handle
             grid on;
         end
         
-        function viewTrackingSingle(rs, showRadar)
+        function viewTrackingSingle(rs)
             
-            % Default variables
-            if ~exist('showRadar', 'var')
-                showRadar = false;
-            end
-            
-            % Open figure
-            figure('Name', 'Tracking Results');
-            
-            % Collect tracking data from each unit and frame
-            meas_coords = nan(2, rs.multi.n_fr, rs.multi.n_re);
-            est_coords = meas_coords;
             for unit = 1:rs.multi.n_re
                 for frame = 1:rs.multi.n_fr
-                    if rs.tracking_single{unit}.hit_list(frame)
-                        meas_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
-                        est_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.estimate{frame}.cart;
-                    end
-                end
-    
-                % Plot results
-                scatter(meas_coords(2,:,unit), meas_coords(1,:,unit), 'b');
-                hold on;
-                plot(est_coords(2,:,unit), est_coords(1,:,unit), 'r');
-                hold on;
-                if showRadar
-                    scatter(rs.multi.radar_pos(2,unit), rs.multi.radar_pos(1,unit), 'r', '.')
+                    
+                    meas_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
+                    est_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
+                    
                 end
             end
-            
-            % Adjust plot
-            ax = gca;
-            xdiff = diff(ax.XLim);
-            ylim([-xdiff/2, xdiff/2]);
-            grid on;
-            pbaspect([1 1 1]);
         end
         
         function readOut(rs)

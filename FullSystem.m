@@ -8,12 +8,9 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - Single unit tracking
-            - LFM R-D coupling
-            - Non-EKF parameters
-            - Mahanalobis Distance
         - Incoherent integration
         - Multistatic processing
+
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

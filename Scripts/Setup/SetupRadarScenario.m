@@ -50,8 +50,8 @@ scenario.radarsetup = struct( ...
 
 % Tracking Parameters
 tracking = struct( ...
-    'max_vel',      500, ...            % Maximum possible speed for coarse gating
-    'dist_thresh',  Inf, ...            % Mahanalobis distance threshold for fine gating
+    'max_vel',      250, ...            % Maximum possible speed for coarse gating
+    'dist_thresh',  13.8, ...           % Mahanalobis distance threshold for fine gating
     'miss_max',     2, ...              % Number of misses required to inactivate track
     'EKF',          true, ...           % T/F use extended Kalman filter
     'sigma_v',      [10, 10], ...         % XY target motion uncertainty
@@ -86,7 +86,7 @@ static_mode = struct( ...
 
 % Search mode properties
 search_mode = struct( ...
-    'init_angle',   20, ...             % Initial angle
+    'init_angle',   0, ...             % Initial angle
     'search_step',  -5, ...             % Angle delta per dwell, in degrees
     'search_max',   45, ...             % Maximum angle for search mode
     'int_type',     'incoherent');      % Integration type for search mode

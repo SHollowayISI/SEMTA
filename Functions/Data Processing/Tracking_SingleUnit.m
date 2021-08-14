@@ -112,13 +112,11 @@ function [hitFound, meas] = targetToTrack(track, det_list)
     % Coarse gating
     delta_range = abs(det_list.range - track.estimate{frame-1}.range);
     max_delta = rs.frame_time * ts.max_vel;
-    isValid = isValid && (delta_range < max_delta);
+    isValid = isValid & (delta_range < max_delta);
     
-    % Fine gating
-    %PLACEHOLDER
-    %TODO: IMPLEMENT MAHANALOBIS DISTANCE
-    dist = abs(det_list.range - predictRange(track));
-    isValid = isValid && (dist < ts.dist_thresh);
+    % Fine gating using statistically weighted distance
+    dist = MahanalobisDistance(track, det_list, rs, ts, frame);
+    isValid = isValid & (dist < ts.dist_thresh)';
     
     % Check if any detections are valid
     if ~any(isValid)
