@@ -24,11 +24,24 @@ if strcmp(radarsetup.detect_type, 'CFAR')
             rng_ax = (pad(1) + 1):(sz(1)-pad(1));
             dop_ax = (pad(2) + 1):(sz(2)-pad(2));
             
+            %PLACEHOLDER!!!! REMOVE REMOVE REMOVE REMOVE
+            % Only search near actual target location, to save time on long
+            % test
+            search_width = [5 5];
+            true_rng = sqrt(sum(scenario.traj.pos(scenario.traj, 0).^2));
+            true_vel = scenario.traj.vel(scenario.traj, 0);
+            [~, r_cnt] = min(abs(cube.range_axis - true_rng));
+            [~, v_cnt] = min(abs(cube.vel_axis - true_vel(1)));
+            rng_ax = r_cnt + (-search_width(1):search_width(1));
+            dop_ax = v_cnt + (-search_width(2):search_width(2));
+            
             % Gneerate indices from axes
             idx = [];
             idx(1,:) = repmat(rng_ax, 1, length(dop_ax));
-            idx(2,:) = reshape(repmat(dop_ax, length(rng_ax), 1), 1, []);         
+            idx(2,:) = reshape(repmat(dop_ax, length(rng_ax), 1), 1, []);
+            
 end
+
 
 % Branch depending on integration type
 switch radarsetup.int_type
