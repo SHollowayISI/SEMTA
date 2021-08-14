@@ -86,7 +86,7 @@ function [track] = addMiss(track)
     track.misses = track.misses + 1;
     
     % Inactivate track if misses exceed maximum
-    if track.misses > ts.miss_max
+    if track.isActive && (track.misses > ts.miss_max)
         track.isActive = false;
     end
 end

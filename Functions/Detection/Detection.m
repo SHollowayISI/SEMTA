@@ -15,7 +15,6 @@ detection.noise_pow = pow2db(median(mean(cube.pow_cube, 1), 'all'));
 
 % Generate detection map
 sz = size(cube.pow_cube);
-detection.detect_cube = zeros(sz(1:3));
 
 % Set up CFAR indices
 if strcmp(radarsetup.detect_type, 'CFAR')
@@ -42,6 +41,7 @@ switch radarsetup.int_type
     case 'incoherent'
         num_loops = 1;
 end
+detection.detect_cube = zeros(sz(1), sz(2), num_loops);
 
 % Loop across CPIs
 for loop = 1:num_loops
@@ -92,7 +92,8 @@ for loop = 1:num_loops
             detection.int_detect_cube = detection.detect_cube;
             
             % Generate power cube
-            avg_cube = detection.int_detect_cube .* rd_cube;
+            avg_cube = squeeze(sum(detection.int_detect_cube .* cube.pow_cube, 3));
+    end
 end
 
 %% Calculate properties of detection

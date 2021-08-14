@@ -8,7 +8,9 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
+        - Error study
         - Multistatic processing
+        - Save detection coordinates
 
 
     Notes to self:
