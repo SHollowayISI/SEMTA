@@ -22,14 +22,12 @@ scenario.radarsetup = struct( ...
     'bw',       10e6, ...               % Bandwidth of chirp
     'prf',      20e3, ...               % Pulse repetition frequency in Hz
     'n_p',      1024, ...               % Number of pulses to simulate
-    'cpi_fr',   5, ...                  % Number of CPI per frame
+    'cpi_fr',   1, ...                  % Number of CPI per frame
     ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
     'tx_pow',       4, ...              % Transmit power in Watts per channel
-    'rx_sys_gain',  -1.8922, ...        % Rx system gain in dB 
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
-    'tx_sys_gain',  -1.8922, ...        % Tx system gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
     'beamwidth',    7, ...              % Antenna beamwidth in degrees
@@ -46,7 +44,7 @@ scenario.radarsetup = struct( ...
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
     'num_guard',    [3 3], ...          % Number of R-D guard cells for CFAR detection
     'num_train',    [15 2], ...         % Number of R-D training cells for CFAR detection
-    'det_m',        2);                 % M for m-of-n processing
+    'det_m',        1);                 % M for m-of-n processing
 
 % Tracking Parameters
 tracking = struct( ...
@@ -71,7 +69,7 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'search';
+scenario.radarsetup.initial_mode = 'static';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
@@ -81,7 +79,7 @@ wait_mode = struct( ...
 
 % Static mode properties
 static_mode = struct( ...
-    'init_angle',   0, ...              % Constant beam steering angle
+    'init_angle',   ang_set, ...              % Constant beam steering angle
     'int_type',     'binary');          % Integration type for static mode
 
 % Search mode properties

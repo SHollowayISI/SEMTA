@@ -11,7 +11,7 @@ cube = scenario.cube;
 %% Perform Detection
 
 % Estimate noise power
-detection.noise_pow = pow2db(median(mean(cube.pow_cube, 1), 'all'));
+detection.noise_pow = pow2db(median(mean(sum(cube.pow_cube, 4), 1), 'all'));
 
 % Generate detection map
 sz = size(cube.pow_cube);
@@ -19,10 +19,15 @@ sz = size(cube.pow_cube);
 % Set up CFAR indices
 if strcmp(radarsetup.detect_type, 'CFAR')
     
+            
+    
             % Set up index map
             pad = radarsetup.num_guard + radarsetup.num_train;
             rng_ax = (pad(1) + 1):(sz(1)-pad(1));
             dop_ax = (pad(2) + 1):(sz(2)-pad(2));
+            
+            %PLACEHOLDER!!!! REMOVE REMOVE REMOVE REMOVE
+            dop_ax = ceil(sz(2)/2) + (-5:5);
             
             idx = [];
             idx(1,:) = repmat(rng_ax, 1, length(dop_ax));
@@ -31,6 +36,10 @@ if strcmp(radarsetup.detect_type, 'CFAR')
             % Position in radar cube to place results
             cfar_indices_r = (pad(1)+1):(pad(1)+length(rng_ax));
             cfar_indices_d = (pad(2)+1):(pad(2)+length(dop_ax));
+            %TODO: THIS IS REDUNDANT, ELIMINATE
+            
+            %PLACEHOLDER!!!! REMOVE REMOVE REMOVE REMOVE
+            cfar_indices_d = ceil(sz(2)/2) + (-5:5);
 end
 
 
@@ -71,7 +80,7 @@ for loop = 1:num_loops
             cfar_out = scenario.sim.CFAR(rd_cube, idx);
             
             % Save detection cube
-            detection.detect_cube(cfar_indices_r,cfar_indices_d,loop) = reshape(cfar_out, length(rng_ax), length(dop_ax));          
+            detection.detect_cube(cfar_indices_r,cfar_indices_d,loop) = reshape(cfar_out, length(cfar_indices_r), length(cfar_indices_d));          
             
     end
     

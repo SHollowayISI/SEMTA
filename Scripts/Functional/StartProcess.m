@@ -24,7 +24,7 @@ close all;
 addpath(genpath(pwd));
 
 % Folders to exclude
-exclude_paths = {'./Old', './References', './.git', './Scratch'};
+exclude_paths = {'./Old', './References', './Results', './.git', './Scratch'};
 
 % Remove excluded folders from path
 for path = exclude_paths

@@ -76,7 +76,7 @@ for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
     sig = sim.target(sig, rcs.evaluate(rcs, tgt_ang(1), radarsetup.f_c));
     
     % Collect the echo from the incident angle at the antenna
-    sig = sim.collector(sig,tgt_ang, Rx_steer);
+    sig = sim.collector(sig, tgt_ang, Rx_steer);
     
     % Reshape signal to fast time x slow time
     sig = sim.receiver(sig, ~tx_status);
