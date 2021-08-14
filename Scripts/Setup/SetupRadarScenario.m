@@ -22,7 +22,7 @@ scenario.radarsetup = struct( ...
     'bw',       10e6, ...               % Bandwidth of chirp
     'prf',      20e3, ...               % Pulse repetition frequency in Hz
     'n_p',      1024, ...               % Number of pulses to simulate
-    'cpi_fr',   5, ...                  % Number of CPI per frame
+    'cpi_fr',   1, ...                  % Number of CPI per frame
     ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
@@ -46,7 +46,22 @@ scenario.radarsetup = struct( ...
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
     'num_guard',    [3 3], ...          % Number of R-D guard cells for CFAR detection
     'num_train',    [15 2], ...         % Number of R-D training cells for CFAR detection
-    'det_m',        2);                 % M for m-of-n processing
+    'det_m',        1);                 % M for m-of-n processing
+
+% Tracking Parameters
+tracking = struct( ...
+    'max_vel',      500, ...            % Maximum possible speed for coarse gating
+    'dist_thresh',  Inf, ...            % Mahanalobis distance threshold for fine gating
+    'miss_max',     2, ...              % Number of misses required to inactivate track
+    'EKF',          true, ...           % T/F use extended Kalman filter
+    'sigma_v',      [10, 10], ...         % XY target motion uncertainty
+    'sigma_z_EKF',  [1, ...
+                     deg2rad(0.1),...
+                     1], ...            % RAV measurement uncertainty (for EKF)
+    'sigma_z',      [1, 1]);            % XY measurement uncertainty
+
+scenario.radarsetup.tracking_single = tracking;
+    
 
 % Calculate derived parameters
 scenario.radarsetup.pri = 1/scenario.radarsetup.prf;
@@ -64,10 +79,15 @@ wait_mode = struct( ...
     'init_angle',   0, ...              % Idle beam steering angle
     'int_type',     'incoherent');      % Integration type for wait mode
 
+% Static mode properties
+static_mode = struct( ...
+    'init_angle',   0, ...              % Constant beam steering angle
+    'int_type',     'binary');          % Integration type for static mode
+
 % Search mode properties
 search_mode = struct( ...
-    'init_angle',   45, ...            % Initial angle
-    'search_step',  -5, ...              % Angle delta per dwell, in degrees
+    'init_angle',   20, ...             % Initial angle
+    'search_step',  -5, ...             % Angle delta per dwell, in degrees
     'search_max',   45, ...             % Maximum angle for search mode
     'int_type',     'incoherent');      % Integration type for search mode
 
@@ -84,6 +104,7 @@ ideal_track_mode = struct( ...
 
 % Add to data structure
 scenario.radarsetup.modes = struct( ...
+    'static',       static_mode, ...
     'wait',         wait_mode, ...
     'search',       search_mode, ...
     'track',        track_mode, ...

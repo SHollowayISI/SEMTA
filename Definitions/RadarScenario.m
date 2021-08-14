@@ -3,6 +3,8 @@
 classdef RadarScenario < handle
     properties
         multi
+        tracking_single
+        tracking_multi
         rcs
         traj
         radarsetup
@@ -255,7 +257,7 @@ classdef RadarScenario < handle
                 % Save target angle of arrival
                 RadarScenario.multi.aoa( ...
                     RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                    RadarScenario.detection.detect_list.az(end);                    
+                    RadarScenario.detection.detect_list.az(end);
                 
                 % Save target SNR
                 RadarScenario.multi.SNR( ...
@@ -373,7 +375,8 @@ classdef RadarScenario < handle
                 nan(rs.multi.n_fr, rs.multi.n_re);
             rs.multi.mode = ...
                 {nan(rs.multi.n_fr, rs.multi.n_re)};
-                
+            rs.tracking_single = ...
+                cell(1, rs.multi.n_re);
             
         end
         

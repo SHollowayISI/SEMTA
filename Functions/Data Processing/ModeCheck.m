@@ -13,6 +13,7 @@ end
 
 current_mode = scenario.flags.mode;
 detected = scenario.detection.detect_logical;
+trackActive = scenario.tracking_single{scenario.flags.unit}.isActive;
 mode_vars = scenario.radarsetup.modes;
 
 %% Declare Flags
@@ -38,8 +39,7 @@ switch current_mode
         
     case 'track'
         % If track is lost, fallback to other mode
-        %PLACEHOLDER: ALLOW MISSED DETECTIONS VIA TRACKING
-        if ~detected
+        if ~trackActive
             changed_mode = true;
             new_mode = mode_vars.track.fallback;
         end

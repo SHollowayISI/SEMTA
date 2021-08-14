@@ -50,7 +50,7 @@ for unit = 1:scenario.multi.n_re
         scenario.detection = Detection(scenario);
         
         % Perform single unit tracking
-        %TODO
+        scenario = Tracking_SingleUnit(scenario);
         
         % Store and clear target information
         storeMulti(scenario);

@@ -19,13 +19,13 @@ nm = 1852;
 %% Multistatic Scenario Setup
 
 % Locations of radar units
-num_receivers = 3;
+num_receivers = 1;
 % radar_pos = ...
 %     [-0.5 * nm * ones(1,num_receivers); ...    % Constant x location
 %      0.25 * nm * ((0:(num_receivers-1))); ...  % Incremental y distance
 %         0 * nm * ones(1,num_receivers)];       % Constant z elevation
 
-% radar_pos = [-1000; 0; 0];
+% radar_pos = [0; 0; 0];
 
 dist_from_center = 1000;
 unit_spacing = 500;
@@ -44,7 +44,7 @@ scenario.multi = struct( ...
     'n_re',         num_receivers, ...  % Number of radar units to simulate
     'radar_pos',    radar_pos);
     
-% Tracking properties
+% Multistatic tracking properties
 tracking = struct( ...
     ...
     'method',       'SNR', ...          % Method to select single unit results
@@ -55,7 +55,7 @@ tracking = struct( ...
     'sigma_v',      [4.5 4.5 4.5], ...  % XYZ target motion uncertainty
     'sigma_z',      [0.5 0.5 0.5 1]);   % XYZnull or RAEV measurement uncertainty
 
-scenario.multi.tracking = tracking;
+scenario.multi.tracking_multi = tracking;
 
 %% Run Setup Scripts
 
