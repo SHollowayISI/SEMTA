@@ -82,6 +82,111 @@ classdef RadarScenario < handle
             zlabel('Altitude [m]','FontWeight','bold');
         end
         
+        function viewRxSignal(rs, chirp, plotPower)
+            
+            if ~exist('chirp', 'var')
+                chirp = 1;
+            end
+            
+            if ~exist('plotPower', 'var')
+                plotPower = true;
+            end
+            
+            figure('Name', 'Time Domain Signal Plot');
+            if plotPower
+                plot(abs(rs.rx_sig(:,chirp,1)).^2);
+                ylabel('Signal Power','FontWeight','bold');
+            else
+                plot(real(rs.rx_sig(:,chirp,1)));
+                hold on;
+                plot(imag(rs.rx_sig(:,chirp,1)));
+                ylabel('Signal Amplitude', 'FontWeight', 'bold');
+            end
+            grid on;
+            title('Time Domain Signal Plot');
+            xlabel('Sample #','FontWeight','bold')
+            xlim([0 size(rs.rx_sig, 1)])
+        end
+        
+        function viewCorrelationFFT(rs, chirp, plotPower)
+            
+            if ~exist('chirp', 'var')
+                chirp = 1;
+            end
+            
+            if ~exist('plotPower', 'var')
+                plotPower = true;
+            end
+            
+            N_r = 2^ceil(log2(size(rs.rx_sig, 1)));
+            
+            figure('Name', 'Correlation Signal FFTs');
+            if plotPower
+                subplot(2,1,1)
+                plot(abs(fft(rs.rx_sig(:,chirp,1), N_r, 1)).^2);
+                ylabel('Signal Power','FontWeight','bold');
+                grid on;
+                title('Receive Signal FFT');
+                xlabel('Sample #','FontWeight','bold')
+                xlim([0 N_r])
+                
+                subplot(2,1,2)
+                plot(abs(fft(rs.sim.waveform(), N_r, 1)).^2);
+                ylabel('Signal Power','FontWeight','bold');
+                grid on;
+                title('Correlation Signal FFT');
+                xlabel('Sample #','FontWeight','bold')
+                xlim([0 N_r])
+            else
+                subplot(2,1,1)
+                plot(real(fft(rs.rx_sig(:,chirp,1), N_r, 1)));
+                hold on;
+                plot(imag(fft(rs.rx_sig(:,chirp,1), N_r, 1)));
+                ylabel('Signal Amplitude', 'FontWeight', 'bold');
+                grid on;
+                title('Receive Signal FFT');
+                xlabel('Sample #','FontWeight','bold')
+                xlim([0 N_r])
+                
+                subplot(2,1,2)
+                plot(real(fft(rs.sim.waveform(), N_r, 1)));
+                hold on;
+                plot(imag(fft(rs.sim.waveform(), N_r, 1)));
+                ylabel('Signal Amplitude', 'FontWeight', 'bold');
+                grid on;
+                title('Correlation Signal FFT');
+                xlabel('Sample #','FontWeight','bold')
+                xlim([0 N_r])
+            end
+        end
+        
+        function viewRangeTimeDomain(rs, chirp, plotPower)
+            
+            if ~exist('chirp', 'var')
+                chirp = 1;
+            end
+            
+            if ~exist('plotPower', 'var')
+                plotPower = true;
+            end
+            
+            figure('Name', 'Time Domain Range Plot');
+            if plotPower
+                plot(rs.cube.range_axis, abs(rs.cube.range_cube(:,chirp,1)).^2);
+                ylabel('Signal Power','FontWeight','bold');
+            else
+                plot(rs.cube.range_axis, real(rs.cube.range_cube(:,chirp,1)));
+                hold on;
+                plot(rs.cube.range_axis, imag(rs.cube.range_cube(:,chirp,1)));
+                ylabel('Signal Amplitude', 'FontWeight', 'bold');
+            end
+            grid on;
+            title('Time Domain Range Plot');
+            xlabel('Range','FontWeight','bold')
+            xlim([0 rs.cube.range_axis(end)])
+            
+        end
+        
         function viewRangeCube(rs, graphType, cpi)
             
             if ~exist('cpi', 'var')
@@ -93,11 +198,11 @@ classdef RadarScenario < handle
             end
             
             if strcmp(graphType, 'heatmap')
-                figure('Name', 'Range-Doppler Heat Map');
+                figure('Name', 'Range-Slow Time Heat Map');
                 imagesc(1:rs.radarsetup.n_p, ...
                     rs.cube.range_axis, ...
                     10*log10(sum(abs(rs.cube.range_cube(:,:,cpi,:)).^2, 4)))
-                title('Range-Doppler Heat Map')
+                title('Range-Slow Time Heat Map')
                 set(gca,'YDir','normal')
                 xlabel('Chirp #','FontWeight','bold')
                 ylabel('Range [m]','FontWeight','bold')
@@ -108,7 +213,7 @@ classdef RadarScenario < handle
                     rs.cube.range_axis, ...
                     10*log10(sum(abs(rs.cube.range_cube(:,:,cpi,:)).^2, 4)), ...
                     'EdgeColor', 'none')
-                title('Range-Doppler Surface')
+                title('Range-Slow Time Surface')
                 set(gca,'YDir','normal')
                 xlabel('Chirp #','FontWeight','bold')
                 ylabel('Range [m]','FontWeight','bold')
@@ -187,7 +292,7 @@ classdef RadarScenario < handle
             figure('Name', 'Range-Doppler Detections');
             imagesc(rs.cube.vel_axis, ...
                 rs.cube.range_axis, ...
-                rs.detection.cfar_detect_cube)
+                rs.detection.int_detect_cube)
             title('Range-Doppler Detections')
             set(gca,'YDir','normal')
             xlabel('Velocity [m/s]','FontWeight','bold')

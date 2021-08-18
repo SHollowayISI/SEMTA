@@ -52,14 +52,13 @@ tracking = struct( ...
     'dist_thresh',  13.8, ...           % Mahanalobis distance threshold for fine gating
     'miss_max',     2, ...              % Number of misses required to inactivate track
     'EKF',          true, ...           % T/F use extended Kalman filter
-    'sigma_v',      [10, 10], ...       % XY target motion uncertainty
+    'sigma_v',      [10, 10], ...       % XY target motion uncertainty (DEPRECATED)
     'sigma_z_EKF',  [1, ...
                      deg2rad(1),...
-                     1], ...            % RAV measurement uncertainty (for EKF)
+                     1], ...            % RAV measurement uncertainty (for EKF) (DEPRECATED)
     'sigma_z',      [1, 1]);            % XY measurement uncertainty
 
 scenario.radarsetup.tracking_single = tracking;
-    
 
 % Calculate derived parameters
 scenario.radarsetup.pri = 1/scenario.radarsetup.prf;
@@ -69,12 +68,12 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'ideal';
+scenario.radarsetup.initial_mode = 'static';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
 wait_mode = struct( ...
-    'init_angle',   0, ...              % Idle beam steering angle
+    'init_angle',   -45, ...              % Idle beam steering angle TODO:CHANGE!!!
     'int_type',     'incoherent');      % Integration type for wait mode
 
 % Static mode properties

@@ -8,10 +8,10 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - Error study
-        - Measurement variance functions
         - Multistatic processing
+        - Correct monopulse deviation curve
         - Save detection coordinates
+        - Fix model_constant
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

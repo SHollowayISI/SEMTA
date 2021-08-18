@@ -60,7 +60,6 @@ switch mode
             
             % Unpack variables
             det_list = scenario.detection.detect_list;
-            last_angle = scenario.multi.steering_angle(frame-1, unit);
             
             % Check for detections in previous frame
             if scenario.detection.detect_logical
@@ -74,7 +73,7 @@ switch mode
                 
                 % Predict next angle using tracking results
                 Tm = scenario.radarsetup.frame_time;
-                X = scenario.tracking_single{unit}.estimate{frame}.state;
+                X = scenario.tracking_single{unit}.estimate{frame-1}.state;
                 angle_out = atand((X(1) + Tm*X(2)) / (X(3) + Tm*X(4)));
             end 
         end

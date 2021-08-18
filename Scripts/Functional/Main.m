@@ -91,7 +91,7 @@ end
 % viewDetections(scenario);
 
 % View tracking results
-% viewTrackingSingle(scenario);
+viewTrackingSingle(scenario);
 
 % View SNR of each radar unit
 % viewSNR(scenario);
