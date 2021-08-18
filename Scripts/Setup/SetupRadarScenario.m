@@ -69,7 +69,7 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'static';
+scenario.radarsetup.initial_mode = 'ideal';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
@@ -79,7 +79,7 @@ wait_mode = struct( ...
 
 % Static mode properties
 static_mode = struct( ...
-    'init_angle',   ang_set, ...              % Constant beam steering angle
+    'init_angle',   0, ...              % Constant beam steering angle
     'int_type',     'binary');          % Integration type for static mode
 
 % Search mode properties

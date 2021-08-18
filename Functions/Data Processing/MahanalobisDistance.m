@@ -66,8 +66,7 @@ else
     
     % Measurement matrix
     H = [1, 0, 0, 0; ...
-         0, 0, 1, 0; ...
-         0, 0, 0, 0];
+         0, 0, 1, 0];
 end
 
 %% Calculate State Variables

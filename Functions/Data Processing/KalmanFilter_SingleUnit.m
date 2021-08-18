@@ -135,8 +135,7 @@ else
     
     % Measurement matrix
     H = [1, 0, 0, 0; ...
-         0, 0, 1, 0; ...
-         0, 0, 0, 0];
+         0, 0, 1, 0];
     
     % Measurement residual
     Z_res = Z - (H * X_pre);

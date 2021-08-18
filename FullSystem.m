@@ -9,9 +9,9 @@
 
     TODO:
         - Error study
+        - Measurement variance functions
         - Multistatic processing
         - Save detection coordinates
-
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

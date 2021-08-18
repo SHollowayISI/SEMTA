@@ -125,7 +125,8 @@ for n = 1:length(regions)
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
     rat = sum(ratio_list .* power_list) ./ sum(power_list);
-    monopulse_aoa = radarsetup.beamwidth * rat / radarsetup.mono_coeff;
+    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)).^2) .* ...
+        radarsetup.beamwidth * rat / radarsetup.mono_coeff;
     detection.detect_list.az(end+1) = monopulse_aoa ...
         + scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit);
     
