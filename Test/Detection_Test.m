@@ -58,9 +58,21 @@ for loop = 1:num_loops
     % Branch depending on integration type
     switch radarsetup.int_type
         case 'binary'
+            
+            % Set cube to examine
             rd_cube = sum(cube.pow_cube(:,:,loop,:), 4);
+            
+            % Estimate noise power
+            detection.noise_pow = pow2db(median(mean(sum(cube.pow_cube, 4), 1), 'all'));
+
         case 'incoherent'
+            
+            % Set cube to examine
             rd_cube = sum(cube.pow_cube, [3 4]);
+            
+            % Estimate noise power
+            detection.noise_pow = pow2db(median(mean(rd_cube, 1), 'all'));
+
     end
     
     switch radarsetup.detect_type
@@ -157,4 +169,3 @@ for n = 1:length(regions)
 end
 
 end
-

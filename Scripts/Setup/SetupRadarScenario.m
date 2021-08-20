@@ -30,7 +30,7 @@ scenario.radarsetup = struct( ...
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
-    'beamwidth',    7, ...              % Antenna beamwidth in degrees
+    'beamwidth',    6.335, ...              % Antenna beamwidth in degrees
     'mono_coeff',   -1.8921, ...        % Coefficient in monopulse AoA linear approximation
     'phase_bits',   6, ...              % Number of bits for phase shifter resolution Nbits = log2(360/resolution)
     ...
@@ -38,7 +38,7 @@ scenario.radarsetup = struct( ...
     'win_type',     'blackmanharris', ...   % Type of window for doppler processing
     ...
     ... % Detection Properties
-    'int_type',     'binary', ...       % Choose 'binary' or 'incoherent' integration
+    'int_type',     'incoherent', ...   % Choose 'binary' or 'incoherent' integration
     'detect_type',  'CFAR', ...         % Choose 'CFAR' or 'threshold'
     'thresh',       [], ...             % Threshold in dB for threshold detection
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
@@ -74,30 +74,30 @@ scenario.flags.mode = scenario.radarsetup.initial_mode;
 % Wait mode properties
 wait_mode = struct( ...
     'init_angle',   -45, ...              % Idle beam steering angle TODO:CHANGE!!!
-    'int_type',     'incoherent');      % Integration type for wait mode
+    'int_type',     'binary');      % Integration type for wait mode
 
 % Static mode properties
 static_mode = struct( ...
     'init_angle',   0, ...              % Constant beam steering angle
-    'int_type',     'binary');          % Integration type for static mode
+    'int_type',     'incoherent');          % Integration type for static mode
 
 % Search mode properties
 search_mode = struct( ...
     'init_angle',   45, ...             % Initial angle
     'search_step',  -5, ...             % Angle delta per dwell, in degrees
     'search_max',   45, ...             % Maximum angle for search mode
-    'int_type',     'incoherent');      % Integration type for search mode
+    'int_type',     'binary');      % Integration type for search mode
 
 % Track mode properties
 track_mode = struct( ...
     'fallback',     'search', ...       % Fallback mode if detection is lost
     'init_angle',   0, ...              % Initial angle
-    'int_type',     'binary');          % Integration type for track mode
+    'int_type',     'incoherent');          % Integration type for track mode
 
 % Ideal (debug) track mode properties
 ideal_track_mode = struct( ...
     'init_angle',   0, ...              % Initial angle (unused)
-    'int_type',     'binary');          % Integration type for ideal track mode
+    'int_type',     'incoherent');          % Integration type for ideal track mode
 
 % Add to data structure
 scenario.radarsetup.modes = struct( ...

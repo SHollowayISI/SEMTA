@@ -10,9 +10,6 @@ cube = scenario.cube;
 
 %% Perform Detection
 
-% Estimate noise power
-detection.noise_pow = pow2db(median(mean(sum(cube.pow_cube, 4), 1), 'all'));
-
 % Generate detection map
 sz = size(cube.pow_cube);
 
@@ -45,9 +42,21 @@ for loop = 1:num_loops
     % Branch depending on integration type
     switch radarsetup.int_type
         case 'binary'
+            
+            % Set cube to examine
             rd_cube = sum(cube.pow_cube(:,:,loop,:), 4);
+            
+            % Estimate noise power
+            detection.noise_pow = pow2db(median(mean(sum(cube.pow_cube, 4), 1), 'all'));
+
         case 'incoherent'
+            
+            % Set cube to examine
             rd_cube = sum(cube.pow_cube, [3 4]);
+            
+            % Estimate noise power
+            detection.noise_pow = pow2db(median(mean(rd_cube, 1), 'all'));
+
     end
     
     switch radarsetup.detect_type
@@ -125,7 +134,7 @@ for n = 1:length(regions)
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
     rat = sum(ratio_list .* power_list) ./ sum(power_list);
-    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)).^2) .* ...
+    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)).^-2) .* ...
         radarsetup.beamwidth * rat / radarsetup.mono_coeff;
     detection.detect_list.az(end+1) = monopulse_aoa ...
         + scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit);

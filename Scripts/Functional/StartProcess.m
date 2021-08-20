@@ -31,6 +31,11 @@ for path = exclude_paths
     rmpath(genpath(path{:}));
 end
 
+%% Supress Redundant Warnings
+
+% Supress warning regarding phased array System object
+warning('off', 'MATLAB:system:nonRelevantProperty');
+
 %% Timing
 
 % Start timer

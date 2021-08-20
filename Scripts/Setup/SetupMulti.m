@@ -25,7 +25,7 @@ num_receivers = 1;
 %      0.25 * nm * ((0:(num_receivers-1))); ...  % Incremental y distance
 %         0 * nm * ones(1,num_receivers)];       % Constant z elevation
 
-radar_pos = [-3000; 0; 0];
+radar_pos = [-4000; 0; 0];
 
 % dist_from_center = 1000;
 % unit_spacing = 500;
@@ -40,7 +40,7 @@ radar_pos = [-3000; 0; 0];
 % Multistatic properties
 scenario.multi = struct( ...
     ...
-    'n_fr',         100, ...                  % Number of frames for simulation
+    'n_fr',         1, ...                  % Number of frames for simulation
     'n_re',         size(radar_pos,2), ...  % Number of radar units to simulate
     'radar_pos',    radar_pos);
     
