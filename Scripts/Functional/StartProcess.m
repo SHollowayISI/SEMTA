@@ -24,17 +24,12 @@ close all;
 addpath(genpath(pwd));
 
 % Folders to exclude
-exclude_paths = {'./Old', './References', './Results', './.git', './Scratch'};
+exclude_paths = {'./Old', './References', './Results', './.git'};
 
 % Remove excluded folders from path
 for path = exclude_paths
     rmpath(genpath(path{:}));
 end
-
-%% Supress Redundant Warnings
-
-% Supress warning regarding phased array System object
-warning('off', 'MATLAB:system:nonRelevantProperty');
 
 %% Timing
 

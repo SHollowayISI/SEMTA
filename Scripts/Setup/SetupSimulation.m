@@ -25,10 +25,19 @@ scenario.simsetup = struct( ...
     'attach_zip',   false, ...
     'alert_address', 'hollowayseanm@gmail.com', ...
     ...                                         % Email address for status updates
-    'filename',     'Error_SEMTA', ...          % Filename to save data as
+    'par_cfar',     true, ...                   % Use parallel processing for CFAR T/F
+    'filename',     'TrackingTestInitial', ...  % Filename to save data as
     'save_format',  save_format, ...            % File types to save figures
     'save_figs',    false, ...                  % Save figures T/F
     'save_mat',     false, ...                  % Save mat file T/F
     'reduce_mat',   false);                     % Reduce mat file for saving
 
+
+%% Start Parallel Pool
+
+if scenario.simsetup.par_cfar
+    if(isempty(gcp('nocreate')))
+        parpool;
+    end
+end
 

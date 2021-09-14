@@ -1,4 +1,4 @@
-function [detection] = Detection(scenario)
+function [detection] = Detection(scenario, range_true)
 %DETECTION_SEMTA Performs target detection for SEMTA project
 %   Takes scenario object as input, provides scenario.detection object as
 %   output, containing information about detected targets.
@@ -141,6 +141,13 @@ detection.detect_list.cart = [];
 detection.detect_list.SNR = [];
 detection.detect_list.num_detect = length(regions);
 
+% Load offset curve
+if radarsetup.range_off
+    loadIn = load('Results\Error Curves\RangeErrorCurveFixedWindow.mat', 'offsetAxis', 'offsetCurve');
+    offsetCurve = loadIn.offsetCurve;
+    offsetAxis = loadIn.offsetAxis;
+end
+
 % Determine Centroid of azimuth-elevation slice
 for n = 1:length(regions)
     
@@ -150,13 +157,27 @@ for n = 1:length(regions)
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
     rat = sum(ratio_list .* power_list) ./ sum(power_list);
-    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)).^-2) .* ...
+    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit))^-2) * ...
         radarsetup.beamwidth * rat / radarsetup.mono_coeff;
     detection.detect_list.az(end+1) = monopulse_aoa ...
         + scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit);
     
+    % Calculate range estimate and correction
+    if radarsetup.range_off
+        rangeMeas = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+        nearest = scenario.cube.range_res * floor(rangeMeas / scenario.cube.range_res);
+        resid = rangeMeas - nearest;
+        offset = interp1(offsetAxis, offsetCurve, resid, 'linear', 'extrap');
+        rangeCalc = nearest + offset;
+        if isnan(rangeCalc)
+            disp('NaN alert!!!!!!!!!');
+        end
+    else
+        rangeCalc = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+    end
+        
     % Store direct coordinates
-    detection.detect_list.range(end+1) = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+    detection.detect_list.range(end+1) = rangeCalc;
     detection.detect_list.vel(end+1) = interp1(cube.vel_axis, regions(n).WeightedCentroid(1));
     
     % Store derived coordinates

@@ -13,13 +13,33 @@ sim = scenario.sim;
 c = physconst('LightSpeed');
 lambda = c/radarsetup.f_c;
 
-%% Perform Range Matched Filter
+%% Perform Range Correlation
 
 % Calculate FFT size
 N_r = size(scenario.rx_sig, 1);
 
-% Perform correlation processing on received signal
-cube.range_cube = ifft(fft(scenario.rx_sig, N_r, 1) .* conj(fft(sim.waveform(), N_r, 1)));
+% Perform initial FFT
+cube.range_cube = fft(scenario.rx_sig, N_r, 1);
+
+% Apply windowing to reference signal
+if ~strcmp(radarsetup.r_win, 'none')
+    
+    % Calculate samples in chirp time
+    N_ch = floor(radarsetup.t_p * radarsetup.f_s);
+    
+    % Generate windowing
+    window = [];
+    eval(['window = ', radarsetup.r_win, '(N_ch);']);
+    window = [window; ones(N_r - N_ch, 1)];
+    
+    % Generate reference signal
+    ref_sig = conj(fft(window .* sim.waveform(), N_r, 1));
+else
+    ref_sig = conj(fft(sim.waveform(), N_r, 1));
+end
+
+% Perform correlation processing on FFT of received signal
+cube.range_cube = ifft(cube.range_cube .* ref_sig);
 
 % Split into fast time x slow time x CPI
 cube.range_cube = reshape(cube.range_cube, ...
@@ -31,9 +51,13 @@ cube.range_cube = reshape(cube.range_cube, ...
 N_d = 2^ceil(log2(size(cube.range_cube,2)));
 
 % Apply windowing
-expression = '(size(cube.range_cube,2))).*cube.range_cube;';
-expression = ['transpose(', radarsetup.win_type, expression];
-cube.rd_cube = eval(expression);
+if strcmp(radarsetup.d_win, 'none')
+    cube.rd_cube = cube.range_cube;
+else
+    expression = '(size(cube.range_cube,2))).*cube.range_cube;';
+    expression = ['transpose(', radarsetup.d_win, expression];
+    cube.rd_cube = eval(expression);
+end
 
 % FFT across slow time dimension
 cube.rd_cube = fftshift(fft(cube.rd_cube, N_d, 2), 2);

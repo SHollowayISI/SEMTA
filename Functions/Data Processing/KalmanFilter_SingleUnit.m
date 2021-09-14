@@ -27,7 +27,10 @@ if isempty(hit_ind)
     if ts.EKF
         
         % Generate measurement variances from empirical curves
-        [sig_R, sig_A, sig_V] = CalculateVariance(meas);
+        [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
+        
+        % Convert theta variance to radians
+        sig_A = deg2rad(sig_A);
         
         % Calculate uncertainty matrix
         speed_unc = sqrt((ts.max_vel)^2 / 3);

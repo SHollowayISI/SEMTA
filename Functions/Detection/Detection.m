@@ -10,6 +10,9 @@ cube = scenario.cube;
 
 %% Perform Detection
 
+% Estimate noise power
+detection.noise_pow = pow2db(median(mean(sum(cube.pow_cube, 4), 1), 'all'));
+
 % Generate detection map
 sz = size(cube.pow_cube);
 
@@ -24,8 +27,10 @@ if strcmp(radarsetup.detect_type, 'CFAR')
             % Gneerate indices from axes
             idx = [];
             idx(1,:) = repmat(rng_ax, 1, length(dop_ax));
-            idx(2,:) = reshape(repmat(dop_ax, length(rng_ax), 1), 1, []);         
+            idx(2,:) = reshape(repmat(dop_ax, length(rng_ax), 1), 1, []);
+            
 end
+
 
 % Branch depending on integration type
 switch radarsetup.int_type
@@ -72,8 +77,27 @@ for loop = 1:num_loops
         case 'CFAR'
             %% Perform CFAR Detection
             
-            % Perform CFAR detection
-            cfar_out = scenario.sim.CFAR(rd_cube, idx);
+            % Use parallel processing if available and desired
+            if scenario.simsetup.par_cfar
+                
+                % Perform CFAR detection
+                CFAR = scenario.sim.CFAR;
+                stride = 17603;
+                steps = ceil(size(idx,2) / stride);
+                detection_list = nan(stride, steps);
+                
+                parfor i = 1:steps
+                    inds = (stride*(i-1) + 1):(stride*i)
+                    CFAR_detect = CFAR(rd_cube, idx(:,inds));
+                    detection_list(:,i) = CFAR_detect;
+                end
+                cfar_out = detection_list(:);
+                
+            else
+                
+                % Use single threaded processing otherwise
+                cfar_out = scenario.sim.CFAR(rd_cube, idx);
+            end
             
             % Save detection cube
             detection.detect_cube(rng_ax,dop_ax,loop) = reshape(cfar_out, length(rng_ax), length(dop_ax));          
@@ -125,6 +149,13 @@ detection.detect_list.cart = [];
 detection.detect_list.SNR = [];
 detection.detect_list.num_detect = length(regions);
 
+% Load offset curve
+if radarsetup.range_off
+    loadIn = load('Results\Error Curves\RangeErrorCurveFixedWindow.mat', 'offsetAxis', 'offsetCurve');
+    offsetCurve = loadIn.offsetCurve;
+    offsetAxis = loadIn.offsetAxis;
+end
+
 % Determine Centroid of azimuth-elevation slice
 for n = 1:length(regions)
     
@@ -134,13 +165,24 @@ for n = 1:length(regions)
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
     rat = sum(ratio_list .* power_list) ./ sum(power_list);
-    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)).^-2) .* ...
+    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit))^-2) * ...
         radarsetup.beamwidth * rat / radarsetup.mono_coeff;
     detection.detect_list.az(end+1) = monopulse_aoa ...
         + scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit);
     
+    % Calculate range estimate and correction
+    if radarsetup.range_off
+        rangeMeas = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+        nearest = scenario.cube.range_res * floor(rangeMeas / scenario.cube.range_res);
+        resid = rangeMeas - nearest;
+        offset = interp1(offsetAxis, offsetCurve, resid, 'linear', 'extrap');
+        rangeCalc = nearest + offset;
+    else
+        rangeCalc = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+    end
+        
     % Store direct coordinates
-    detection.detect_list.range(end+1) = interp1(cube.range_axis, regions(n).WeightedCentroid(2));
+    detection.detect_list.range(end+1) = rangeCalc;
     detection.detect_list.vel(end+1) = interp1(cube.vel_axis, regions(n).WeightedCentroid(1));
     
     % Store derived coordinates
@@ -153,4 +195,3 @@ for n = 1:length(regions)
 end
 
 end
-

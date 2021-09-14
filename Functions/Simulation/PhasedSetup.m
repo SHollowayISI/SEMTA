@@ -7,7 +7,6 @@ function [out] = PhasedSetup(scenario)
 %% Unpack Variables
 
 radarsetup = scenario.radarsetup;
-traj = scenario.traj;
 multi = scenario.multi;
 
 %% Set up constants
@@ -83,7 +82,7 @@ out.rx_array = phased.ReplicatedSubarray( ...
     'SubarraySteering',         'Custom');
 
 % Calculate antenna gain correction
-dir = pattern(out.sub_array, radarsetup.f_c, 0, 0);
+dir = pattern(out.sub_array, radarsetup.f_c, 0, 0, 'Type', 'powerdb', 'Normalize', false);
 tx_gain_offset = radarsetup.tx_ant_gain - dir;
 rx_gain_offset = radarsetup.rx_ant_gain - dir;
 
@@ -107,17 +106,14 @@ out.collector = phased.Collector( ...
     'OperatingFrequency',       radarsetup.f_c, ...
     'Wavefront',                'Plane');
 
-% out.receiver = phased.ReceiverPreamp( ...
-%     'Gain',                     rx_gain_offset, ...
-%     'NoiseFigure',              radarsetup.rx_nf, ...
-%     'SampleRate',               radarsetup.f_s, ...
-%     'EnableInputPort',          true, ...
-%     'ReferenceTemperature',     290);
+% Calculate noise power
+noise_power = physconst('boltzmann') * 290 * db2pow(radarsetup.rx_nf) / radarsetup.t_p;
+
+% Set up receiver noise power
 out.receiver = phased.ReceiverPreamp( ...
     'Gain',                     rx_gain_offset, ...
     'NoiseMethod',              'Noise power', ...
-    'NoisePower',               1e-15, ...
-    'EnableInputPort',          true);
+    'NoisePower',               noise_power);
 
 
 %% Detection Setup

@@ -1,4 +1,4 @@
-function [sig_R, sig_A, sig_V] = CalculateVariance(meas)
+function [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs)
 %CALCULATEVARIANCE Calculates standard deviation related to a measurement
 %at a set coordinate and signal-to-noise ratio.
 %   Takes measurement data structure as input, returns deviation in range,
@@ -12,23 +12,35 @@ range = meas.range;
 theta = meas.az;
 SNR = meas.SNR;
 
-%% Calculate variances
+%% Calculate range variance
 
-% Variance in range
-if range < 1500
-    sig_R = 2.3893 - 2.1567 * (range / 1500);
-else
-    sig_R = 10 ^ (max(0.67736 - 0.041748 * SNR, -0.75438 + 0.083800 * SNR));
-end
+% Calculate fading factor due to incomplete pulse return
+fade = min([1; ...
+    2 * range / (physconst('Lightspeed') * rs.t_p); ...
+    (rs.pri - (2 * range / physconst('Lightspeed'))) / rs.t_p]);
 
-% Variance in angle
+% Calculate variance accounting only for SNR
+sig_R = 7.8927 ./ sqrt(db2pow(SNR));
+
+% Incorporate fading resolution loss
+sig_R = sig_R / fade^2;
+
+%% Calculate angle variance
+
+% Calculate variance accounting only for SNR
+sig_A = (rs.beamwidth / abs(rs.mono_coeff)) ./ sqrt(2 * db2pow(SNR));
+
+% Adjust variance for beam steering loss
+sig_A = sig_A ./ cosd(steer).^2;
+
+% Adjust variance for offset from beam center
 offset = abs(theta - steer);
-sig_A_direct = 10 ^ (0.093023 - 0.052088 * SNR);
-sig_A_offset = sig_A_direct * sqrt(1.0122 - (0.52055 * offset) + (0.36508 * offset^2));
-sig_A = deg2rad(sig_A_offset);
+sig_A = sig_A .* sqrt(1 + (rs.mono_coeff * offset / rs.beamwidth)^2);
+
+%% Calculate velocity variance
 
 % Variance in velocity
-sig_V = 10 ^ (-0.90783 - 0.050062 * SNR);
+sig_V = 10 .^ (-1.2517 - 0.0044602 .* SNR);
 
 end
 

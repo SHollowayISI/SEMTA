@@ -17,7 +17,7 @@
 scenario.rcs = struct( ...
     ...
     ... % RCS options
-    'rcs_model',    'constant', ...        % Set 'model' or 'constant'
+    'rcs_model',    'model', ...        % Set 'model' or 'constant'
     'ave_rcs',      -20, ...            % Target RCS in dBm^2
     ...
     ... % Model options
@@ -30,7 +30,7 @@ scenario.rcs = struct( ...
     'specular_on',  true, ...           % T/F Model broadside specular
     'theta_zero',   2, ...              % Angle at which spec. response is 1m^2
     'theta_ave',    30, ...             % Angle at which spec. meets statistical level
-    'peak_rcs',     15);                % RCS at broadside specular peak
+    'peak_rcs',     10);                % RCS at broadside specular peak
 
 % Run RCS model
 scenario.rcs = TargetRCSModel(scenario.rcs);
@@ -47,7 +47,7 @@ scenario.traj = struct( ...
     ... % Trajectory model options
     'alt',      0, ...                % Altitude in meters
     'yvel',     100, ...                % Along track velocity in m/s
-    'exc',      100, ...                % Excursion distance in meters
+    'exc',      0, ...                % Excursion distance in meters
     'per',      0.2, ...                % Excursion period (Nominally 0.05 to 0.2)
     ...
     ... % Static options
@@ -55,7 +55,7 @@ scenario.traj = struct( ...
     'vel_st',   [0; 0; 0], ...          % Velocity input if 'static' is used
     ...
     ... % Model options
-    'model',    'static');              % Set 'static', 'model', 'linear', or 'model_constant'
+    'model',    'model');              % Set 'static', 'model', 'linear', or 'model_constant'
 
 % Run Trajectory model
 scenario.traj = TrajectoryModel(scenario.traj);

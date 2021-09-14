@@ -30,7 +30,7 @@ StartProcess;
 
 %% Test Setup
 
-filename = 'Results/Error Tests/MonopulseTestDelete1.mat';
+filename = 'Results/Error Tests/FixedWindowMonopulseTest.mat';
 
 if isfile(filename)
     
@@ -45,8 +45,9 @@ else
     
     iterations = 20;
     
+%     range_list = 1000:1000:7000;
     range_list = 4000;
-    ang_list = 45;
+    ang_list = 0:15:60;
     offset_list = 0:0.5:3.5;
     vel_set = 0;
     rcs_set = 0;

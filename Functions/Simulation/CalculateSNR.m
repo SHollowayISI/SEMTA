@@ -4,7 +4,7 @@ function [SNR] = CalculateSNR(scenario, angleEffects, straddleEffects, RCS, Rang
 %   provides SNR value as output.
 
 %% Unpack Variables
-radarsetup = scenario.radarsetup;
+rs = scenario.radarsetup;
 
 %% Set argument defaults
 
@@ -29,41 +29,48 @@ end
 %% Calculate SNR
 
 % Total power = power per channel x number of channels
-total_pow = radarsetup.tx_pow * radarsetup.n_ant;
+total_pow = rs.tx_pow * rs.n_ant;
 
 % Wavelength
-lambda = physconst('LightSpeed')/radarsetup.f_c;
+lambda = physconst('LightSpeed')/rs.f_c;
 
 % Number of pulses to integrate
-n_p = radarsetup.n_p;
+n_p = rs.n_p;
 
 % Noise figure
-NF = db2pow(radarsetup.rx_nf);
+NF = db2pow(rs.rx_nf);
 
 % Waveform bandwidth
-BW = 1 / radarsetup.t_p;
+BW = 1 / rs.t_p;
 
 % Constants
 c = (4*pi)^3;
 n = physconst('Boltzmann')*290;
 
 % Tx and Rx array gain
-Gt = db2pow(radarsetup.tx_ant_gain);
-Gr = db2pow(radarsetup.rx_ant_gain);
+Gt = db2pow(rs.tx_ant_gain);
+Gr = db2pow(rs.rx_ant_gain);
 
-% Loss due to Rx Steering at 3dB points
-steering_loss = 0.5;
+% Loss due to Rx Steering at 3dB points (removed)
+% steering_loss = 0.5;
+
+% Loss due to use of window function
+% if strcmp(rs.r_win, 'hamming')
+%     processing_loss = db2pow(-1.35);
+% else
+%     processing_loss = 1;
+% end
 
 % Power fading due to transmit and receive overlap
 fade = [1; ...
-    2 * Range / (physconst('Lightspeed') * radarsetup.t_p); ...
-    (radarsetup.pri - (2 * Range / physconst('Lightspeed'))) / radarsetup.t_p];
+    2 * Range / (physconst('Lightspeed') * rs.t_p); ...
+    (rs.pri - (2 * Range / physconst('Lightspeed'))) / rs.t_p];
 fading_loss = min(fade.^2);
 
 % Power loss due to steering angle
 if angleEffects
-    loadIn = load('D:\User\Documents\MATLAB\SEMTA\Results\Antenna Loss\ArrayLoss.mat', 'angles', 'totalLoss');
-    angLossdB = interp1(loadIn.angles, loadIn.totalLoss, scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit), 'nearest');
+    loadIn = load([pwd, '\Results\Antenna Loss\ArrayLoss.mat'], 'angles', 'totalLoss');
+    angLossdB = interp1(loadIn.angles, loadIn.totalLoss, abs(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)), 'nearest');
     ang_loss = db2pow(-angLossdB);
 else
     ang_loss = 1;
@@ -78,7 +85,7 @@ else
 end
     
 % SNR Calculation
-SNR_abs = (total_pow * fading_loss * ang_loss * straddle_loss * steering_loss ...
+SNR_abs = (total_pow * fading_loss * ang_loss * straddle_loss ...
     * Gt * Gr * n_p * lambda * lambda * RCS) ...
     ./ (c * (Range.^4) * n * NF * BW);
 

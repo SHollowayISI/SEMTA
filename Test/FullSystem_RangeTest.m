@@ -11,6 +11,7 @@
         - Error study
         - Multistatic processing
         - Save detection coordinates
+        - Correct power law for angle estimation centroid
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on
@@ -30,7 +31,7 @@ StartProcess;
 
 %% Test Setup
 
-filename = 'Results/Error Tests/ErrorTestFull.mat';
+filename = 'Results/Error Tests/Delete.mat';
 
 if isfile(filename)
     
@@ -43,14 +44,21 @@ if isfile(filename)
     
 else
     
-    iterations = 50;
+    iterations = 20;
     
-    range_list = 200:200:7200;
-    ang_list = 0:15:60;
+%     range_list = 200:200:7200;
+    res = 5.99584916;
+%     range_list = res*round(2000/res);
+    start = res*round(4000 / res);
+    range_list = start + res*(1/64)*((1:65)-1);
+%     range_list = 200:200:7200;
+%     ang_list = 0:15:60;
+    ang_list = 0;
     vel_set = 0;
-    rcs_list = 0:-10:-20;
+%     rcs_list = 0:-10:-20;
+    rcs_list = 0;
     
-    range_var = 6;
+    range_var = 0;
     ang_var = 0;
     vel_var = 0;
     
@@ -74,31 +82,38 @@ else
     
 end
 
+
 % Testing Loop
 for rcs_ind = 1:length(rcs_list)
     
     if rcs_ind < rcs_start
         continue
+    else
+        rcs_start = 1;
     end
     
     for ang_ind = 1:length(ang_list)
         
         if ang_ind < ang_start
             continue
+        else
+            ang_start = 1;
         end
         
         for range_ind = 1:length(range_list)
             
             if range_ind < range_start
                 continue
+            else
+                range_start = 1;
             end
             
             % Break out if previous iteration failed detection
-            if (rcs_ind > 1) && (sum(isnan(snr_meas(range_ind, ang_ind, rcs_ind-1, :))) > iterations/2)
+            if (rcs_ind > 1) && (sum(isnan(snr_meas(range_ind, ang_ind, rcs_ind-1, :))) == iterations)
                 continue
-            elseif (ang_ind > 1) && (sum(isnan(snr_meas(range_ind, ang_ind-1, rcs_ind, :))) > iterations/2)
+            elseif (ang_ind > 1) && (sum(isnan(snr_meas(range_ind, ang_ind-1, rcs_ind, :))) == iterations)
                 continue
-            elseif (range_ind > 1) && (sum(isnan(snr_meas(range_ind-1, ang_ind, rcs_ind, :))) > iterations/2)
+            elseif (range_ind > 1) && (sum(isnan(snr_meas(range_ind-1, ang_ind, rcs_ind, :))) == iterations)
                 continue
             end
             

@@ -48,6 +48,7 @@ if det_logical
             % Add measurement
             track.meas{frame} = meas;
             track.hit_list(frame) = true;
+            track.misses = 0;
         else
             % Add miss
             track = addMiss(track);

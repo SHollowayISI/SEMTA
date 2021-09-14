@@ -34,6 +34,8 @@ t_st = radarsetup.frame_time * (flags.frame - 1);
 tx_pos = multi.radar_pos(:,flags.unit);
 tx_vel = [0; 0; 0];
 
+% Calculate number of blanked bins
+% off_bins = ceil(radarsetup.t_p * radarsetup.f_s);
 
 %% Start of Simulation Tasks
 
@@ -79,7 +81,10 @@ for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
     sig = sim.collector(sig, tgt_ang, Rx_steer);
     
     % Reshape signal to fast time x slow time
-    sig = sim.receiver(sig, ~tx_status);
+    sig = sim.receiver(sig);
+    
+    % Clear signal during off period
+    sig(tx_status,:) = 0;
     
     % Receive the echo at the antenna when not transmitting
     rx_sig(:,chirp,:) = sig;

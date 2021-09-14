@@ -22,7 +22,7 @@ scenario.radarsetup = struct( ...
     'bw',       10e6, ...               % Bandwidth of chirp
     'prf',      20e3, ...               % Pulse repetition frequency in Hz
     'n_p',      1024, ...               % Number of pulses to simulate
-    'cpi_fr',   5, ...                  % Number of CPI per frame
+    'cpi_fr',   1, ...                  % Number of CPI per frame
     ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
@@ -30,12 +30,14 @@ scenario.radarsetup = struct( ...
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
+    'range_off',    false, ...          % Correct range with offset function
     'beamwidth',    6.335, ...              % Antenna beamwidth in degrees
-    'mono_coeff',   -1.8921, ...        % Coefficient in monopulse AoA linear approximation
+    'mono_coeff',   -1.4817, ...        % Coefficient in monopulse AoA linear approximation
     'phase_bits',   6, ...              % Number of bits for phase shifter resolution Nbits = log2(360/resolution)
     ...
     ... % Processing Properties
-    'win_type',     'blackmanharris', ...   % Type of window for doppler processing
+    'r_win',        'hamming', ...      % Type of window for range processing
+    'd_win',        'none', ...         % Type of window for doppler processing
     ...
     ... % Detection Properties
     'int_type',     'incoherent', ...   % Choose 'binary' or 'incoherent' integration
@@ -68,7 +70,7 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'static';
+scenario.radarsetup.initial_mode = 'ideal';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties

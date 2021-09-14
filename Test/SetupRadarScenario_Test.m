@@ -30,15 +30,17 @@ scenario.radarsetup = struct( ...
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
+    'range_off',    true, ...          % Correct range with offset function
     'beamwidth',    6.335, ...          % Antenna beamwidth in degrees
     'mono_coeff',   -1.4817, ...        % Coefficient in monopulse AoA linear approximation
     'phase_bits',   6, ...              % Number of bits for phase shifter resolution Nbits = log2(360/resolution)
     ...
     ... % Processing Properties
-    'win_type',     'blackmanharris', ...   % Type of window for doppler processing
+    'r_win',        'hamming', ...      % Type of window for range processing
+    'd_win',        'none', ...         % Type of window for doppler processing
     ...
     ... % Detection Properties
-    'int_type',     'incoherent', ...       % Choose 'binary' or 'incoherent' integration
+    'int_type',     'incoherent', ...   % Choose 'binary' or 'incoherent' integration
     'detect_type',  'CFAR', ...         % Choose 'CFAR' or 'threshold'
     'thresh',       [], ...             % Threshold in dB for threshold detection
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
