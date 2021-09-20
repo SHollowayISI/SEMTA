@@ -99,23 +99,27 @@ end
 
 %% Multistatic Processing
 
-% Perform multilateration on list of detected targets
-% scenario.multi = Tracking_Multistatic(scenario);
+% Fuse data between multiple estimations
+scenario.tracking_multi = DataFusion(scenario);
 
-% Perform smoothing on multilaterated target coordinates
-% scenario.multi = TargetTracking(scenario);
+% Perform multilateration on list of detected targets
+scenario.tracking_multi = Tracking_Multi(scenario);
 
 % Visualize multilateration result
 % viewMultilateration(scenario);
 
+%TEMP
+MultiPlot_Scratch
+
 %% Results Processing
 
 % Save tracking data for offline processing
-track = scenario.tracking_single;
+track_single = scenario.tracking_single;
+track_multi = scenario.tracking_multi;
 multi = scenario.multi;
 traj = scenario.traj;
 rs = scenario.radarsetup;
-save(['Results/Tracking Results/', scenario.simsetup.filename, '.mat'], 'track', 'multi', 'traj', 'rs');
+save(['Results/Tracking Results/', scenario.simsetup.filename, '.mat'], 'track_single', 'track_multi', 'multi', 'traj', 'rs');
 track = [];
 multi = [];
 traj = [];

@@ -2,13 +2,21 @@ function [dist] = MahanalobisDistance(track, det_list, rs, ts, frame)
 %MAHANALOBISDISTANCE Mahanalobis Distance calculation
 %   Calculates statistical distance, weighted by uncertainty for tracking
 
+
 %% Calculate Model Matrices
+
+% Determine previous successful measurement
+hit_ind = find(track.hit_list(1:(frame-1)));
+hit_ind = hit_ind((frame - hit_ind) <= (ts.miss_max+1));
+last_hit_frame = hit_ind(end);
 
 % Process covariance matrix
 if ts.EKF
-    R = (ts.sigma_z_EKF.^2) .* eye(3);
+    R = generateMeasCovariance(track.meas{last_hit_frame}, rs);
 else
-    R = (ts.sigma_z.^2) .* eye(2);
+%     R = (ts.sigma_z.^2) .* eye(2);
+    R_ekf = generateMeasCovariance(track.meas{last_hit_frame}, rs);
+    R = R_ekf([1 3], [1 3]);
 end
 
 % Calculate time step
@@ -92,6 +100,48 @@ for meas_ind = 1:det_list.num_detect
     
     dist(meas_ind) = Z_res' * (S \ Z_res);
     
+end
+
+%% Function Definitions
+
+% Function to generate state uncertainty matrix
+function [P] = generateStateCovariance(meas, rs, ts)
+        
+    % Generate measurement variances from empirical curves
+    [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
+    
+    % Convert theta variance to radians
+    sig_A = deg2rad(sig_A);
+    
+    % Calculate uncertainty matrix
+    speed_unc = sqrt((ts.max_vel)^2 / 3);
+    az_rad = deg2rad(meas.az);
+    P = diag([ ...
+        (sig_R * cos(az_rad))^2 ...
+        + (sig_A * meas.range * sin(az_rad))^2, ...
+        (sig_V * cos(az_rad))^2 ...
+        + (speed_unc * meas.range * sin(az_rad))^2 ...
+        + (sig_A * meas.vel * sin(az_rad))^2, ...
+        (sig_R * sin(az_rad))^2 ...
+        + (sig_A * meas.range * cos(az_rad))^2, ...
+        (sig_V * sin(az_rad))^2 ...
+        + (speed_unc * meas.range * cos(az_rad))^2 ...
+        + (sig_A * meas.vel * cos(az_rad))^2]);
+        
+end
+
+% Function to generate measurement uncertainty matrix
+function [R] = generateMeasCovariance(meas, rs)
+        
+    % Generate measurement variances from empirical curves
+    [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
+    
+    % Convert theta variance to radians
+    sig_A = deg2rad(sig_A);
+    
+    % Return matrix form
+    R = diag([sig_R, sig_A, sig_V]);
+        
 end
 
 

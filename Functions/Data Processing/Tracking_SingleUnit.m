@@ -113,7 +113,7 @@ function [hitFound, meas] = targetToTrack(track, det_list)
     
     % Coarse gating
     delta_range = abs(det_list.range - track.estimate{frame-1}.range);
-    max_delta = rs.frame_time * ts.max_vel;
+    max_delta = rs.frame_time * Inf *  ts.max_vel;
     isValid = isValid & (delta_range < max_delta);
     
     % Fine gating using statistically weighted distance

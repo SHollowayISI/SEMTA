@@ -25,29 +25,10 @@ if isempty(hit_ind)
          
     % Use measurement uncertainties as covariance prediction
     if ts.EKF
-        
-        % Generate measurement variances from empirical curves
-        [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
-        
-        % Convert theta variance to radians
-        sig_A = deg2rad(sig_A);
-        
-        % Calculate uncertainty matrix
-        speed_unc = sqrt((ts.max_vel)^2 / 3);
-        az_rad = deg2rad(meas.az);
-        P_init = sqrt(diag([ ...
-            (sig_R * cos(az_rad))^2 ...
-                + (sig_A * meas.range * sin(az_rad))^2, ...
-            (sig_V * cos(az_rad))^2 ...
-                + (speed_unc * meas.range * sin(az_rad))^2 ...
-                + (sig_A * meas.vel * sin(az_rad))^2, ...
-            (sig_R * sin(az_rad))^2 ...
-                + (sig_A * meas.range * cos(az_rad))^2, ...
-            (sig_V * sin(az_rad))^2 ...
-                + (speed_unc * meas.range * cos(az_rad))^2 ...
-                + (sig_A * meas.vel * cos(az_rad))^2]));
+        P_init = generateStateCovariance(meas, rs, ts);
     else
-        P_init = diag([sigma_z(1), 0, sigma_z(2), 0]);
+%         P_init = diag([sigma_z(1), 0, sigma_z(2), 0]);
+        P_init = generateStateCovariance(meas, rs, ts);
     end
         
     % Save results
@@ -66,11 +47,22 @@ end
 
 %% Calculate Model Matrices
 
-% Process covariance matrix
+% Measurement covariance matrix
 if ts.EKF
-    R = (ts.sigma_z_EKF.^2) .* eye(3);
+    if ~isempty(meas)
+        R = generateMeasCovariance(meas, rs);
+    else
+        R = generateMeasCovariance(track.meas{last_hit_frame}, rs);
+    end
 else
-    R = (ts.sigma_z.^2) .* eye(2);
+    if ~isempty(meas)
+        R_ekf = generateMeasCovariance(meas, rs);
+        R = R_ekf([1 3], [1 3]);
+    else
+        R_ekf = generateMeasCovariance(track.meas{last_hit_frame}, rs);
+        R = R_ekf([1 3], [1 3]);
+    end
+%     R = (ts.sigma_z.^2) .* eye(2);
 end
 
 % Process covariance matrix (DWNA assumption)
@@ -192,6 +184,46 @@ function [track] = saveStepData(track, frame, X_est, P_est, X_pre, P_pre)
     track.prediction{frame}.cart = X_pre([1; 3]);
     track.prediction{frame}.az = atand(X_pre(3) / X_pre(1));
     
+end
+
+% Function to generate state uncertainty matrix
+function [P] = generateStateCovariance(meas, rs, ts)
+        
+    % Generate measurement variances from empirical curves
+    [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
+    
+    % Convert theta variance to radians
+    sig_A = deg2rad(sig_A);
+    
+    % Calculate uncertainty matrix
+    speed_unc = sqrt((ts.max_vel)^2 / 3);
+    az_rad = deg2rad(meas.az);
+    P = diag([ ...
+        (sig_R * cos(az_rad))^2 ...
+        + (sig_A * meas.range * sin(az_rad))^2, ...
+        (sig_V * cos(az_rad))^2 ...
+        + (speed_unc * meas.range * sin(az_rad))^2 ...
+        + (sig_A * meas.vel * sin(az_rad))^2, ...
+        (sig_R * sin(az_rad))^2 ...
+        + (sig_A * meas.range * cos(az_rad))^2, ...
+        (sig_V * sin(az_rad))^2 ...
+        + (speed_unc * meas.range * cos(az_rad))^2 ...
+        + (sig_A * meas.vel * cos(az_rad))^2]);
+        
+end
+
+% Function to generate measurement uncertainty matrix
+function [R] = generateMeasCovariance(meas, rs)
+        
+    % Generate measurement variances from empirical curves
+    [sig_R, sig_A, sig_V] = CalculateVariance(meas, rs);
+    
+    % Convert theta variance to radians
+    sig_A = deg2rad(sig_A);
+    
+    % Return matrix form
+    R = diag([sig_R, sig_A, sig_V]);
+        
 end
 
 end
