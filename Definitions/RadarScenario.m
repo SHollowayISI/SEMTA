@@ -68,7 +68,7 @@ classdef RadarScenario < handle
                 positions(2,:), ...
                 positions(3,:), 'filled')
             if abs(rs.traj.exc)>0
-                xlim([-rs.traj.exc*1.5, rs.traj.exc*1.5]);
+                xlim([-abs(rs.traj.exc)*1.5, abs(rs.traj.exc)*1.5]);
             end
             if abs(rs.traj.yvel)>0
                 ylim([t(1)*rs.traj.yvel, ...

@@ -50,13 +50,15 @@ scenario.radarsetup = struct( ...
 
 % Tracking Parameters
 tracking = struct( ...
-    'max_vel',          250, ...            % Maximum possible speed for coarse gating
-    'dist_thresh',      Inf, ...13.8, ...           % Mahanalobis distance threshold for fine gating
-    'miss_max',         Inf, ...              % Number of misses required to inactivate track
-    'EKF',              false, ...          % T/F use extended Kalman filter
-    'sigma_v',          [sig_x_in, sig_y_in], ...       % XY target motion uncertainty 
-    'sigma_v_multi',    [], ...       % Motion uncertainty for multilaterated tracking
-    'track_dir',        'combined');        % 'forward', 'reverse', or 'combined'
+    'max_vel',           250, ...            % Maximum possible speed for coarse gating
+    'dist_thresh',       Inf, ...13.8, ...           % Mahanalobis distance threshold for fine gating
+    'miss_max',          Inf, ...              % Number of misses required to inactivate track
+    'EKF',               false, ...          % T/F use extended Kalman filter
+    'sigma_v',           [0.1, 1], ...       % XY target motion uncertainty 
+    'sigma_v_multi',     [], ...       % Motion uncertainty for multilaterated tracking
+    'bi_multi',          true, ...        % Use bidirectional tracking?
+    'bi_single',         true, ...
+    'limitSensorFusion', true);         % Only take top two sensor results
 tracking.sigma_v_multi = tracking.sigma_v;
 
 scenario.radarsetup.tracking_single = tracking;
@@ -80,7 +82,7 @@ wait_mode = struct( ...
 
 % Static mode properties
 static_mode = struct( ...
-    'init_angle',   ang_set, ...              % Constant beam steering angle
+    'init_angle',   0, ...              % Constant beam steering angle
     'int_type',     'incoherent');          % Integration type for static mode
 
 % Search mode properties

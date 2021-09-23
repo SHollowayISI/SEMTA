@@ -34,15 +34,20 @@ for fr = fr_ind
         hit_ind = multi.n_fr + 1 - find(tracking_multi.hit_list(end:-1:(fr+1)));
     end
     
+    % If no track has been established
     if isempty(hit_ind)
         
-        % Use measurement as state prediction
-        X_init = tracking_multi.state{fr};
-        P_init = tracking_multi.var{fr};
-        
-        % Save results
-        tracking_multi = ...
-            saveStepData(tracking_multi, fr, X_init, P_init, X_init, P_init);
+        % Save measurement if taken
+        if tracking_multi.hit_list(fr)
+            
+            % Use measurement as state prediction
+            X_init = tracking_multi.state{fr};
+            P_init = tracking_multi.var{fr};
+            
+            % Save results
+            tracking_multi = ...
+                saveStepData(tracking_multi, fr, X_init, P_init, X_init, P_init);
+        end
         
     else
         

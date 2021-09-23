@@ -1,4 +1,4 @@
-function [track] = KalmanFilter_SingleUnit(track, rs, ts, frame)
+function [track] = KalmanFilter_SingleUnit(track, rs, ts, frame, passDirection)
 %KALMANFILTER_SINGLEUNIT Kalman tracking filter for single unit tracking.
 %   Takes as input track data structure, radarsetup,
 %   radarsetup.tracking_single, and frame number.
@@ -10,8 +10,13 @@ meas = track.meas{frame};
 %% Evaluate Track History
 
 % Determine previous successful measurement
-hit_ind = find(track.hit_list(1:(frame-1)));
-hit_ind = hit_ind((frame - hit_ind) <= (ts.miss_max+1));
+if strcmp(passDirection, 'forward')
+    hit_ind = find(track.hit_list(1:(frame-1)));
+    hit_ind = hit_ind((frame - hit_ind) <= (ts.miss_max+1));
+elseif strcmp(passDirection, 'reverse')
+    hit_ind = length(track.hit_list) + 1 - find(track.hit_list(end:-1:(frame+1)));
+    hit_ind = hit_ind((hit_ind - frame) <= (ts.miss_max+1));
+end
 
 % Check if track needs to be initialized
 if isempty(hit_ind)

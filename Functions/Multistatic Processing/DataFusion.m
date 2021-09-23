@@ -6,6 +6,7 @@ function [tracking_multi] = DataFusion(scenario)
 %% Unpack variables
 
 ts = scenario.tracking_single;
+rs = scenario.radarsetup;
 multi = scenario.multi;
 tracking_multi = struct( ...
     'num_detect',   zeros(multi.n_fr, 1), ...
@@ -25,8 +26,30 @@ for fr = 1:multi.n_fr
     state_sum = 0;
     var_sum = 0;
     
+    % If limiting number of contributing receivers, make ordered list
+    if rs.tracking_single.limitSensorFusion
+        
+        % Loop through receivers to estimate variance
+        variance_measure = nan(multi.n_re, 1);
+        for re = 1:multi.n_re
+            
+            if ts{re}.hit_list(fr)
+                var = diag(ts{re}.estimate{fr}.covar);
+                variance_measure(re) = 1 ./ sum(1 ./ var([1 3]));
+            else
+                variance_measure(re) = Inf;
+            end
+        end
+        
+        % Determine sorted list
+        [~, I] = sort(variance_measure);
+        re_list = I(1:2);
+    else
+        re_list = 1:multi.n_re;
+    end
+    
     % Loop through receivers
-    for re = 1:multi.n_re
+    for re = re_list'
         
         % Only add if receiver detected target
         if ts{re}.hit_list(fr)

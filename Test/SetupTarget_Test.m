@@ -17,8 +17,8 @@
 scenario.rcs = struct( ...
     ...
     ... % RCS options
-    'rcs_model',    'constant', ...        % Set 'model' or 'constant'
-    'ave_rcs',      rcs_in, ...            % Target RCS in dBm^2
+    'rcs_model',    'model', ...        % Set 'model' or 'constant'
+    'ave_rcs',      -20, ...            % Target RCS in dBm^2
     ...
     ... % Model options
     'dim',      [6; 3; 0], ...          % [x; y; z] size of target
@@ -45,17 +45,17 @@ scenario.rcs = TargetRCSModel(scenario.rcs);
 scenario.traj = struct( ...
     ...
     ... % Trajectory model options
-    'alt',      30, ...                % Altitude in meters
-    'yvel',     100, ...                % Along track velocity in m/s
-    'exc',      100, ...                % Excursion distance in meters
-    'per',      0.1, ...                % Excursion period (Nominally 0.05 to 0.2)
+    'alt',      0, ...                % Altitude in meters
+    'yvel',     50 + 200*rand(1), ...                % Along track velocity in m/s
+    'exc',      100 - 200 * rand(1), ...                % Excursion distance in meters
+    'per',      0.2*rand(1), ...                % Excursion period (Nominally 0.05 to 0.2)
     ...
     ... % Static options
-    'pos_st',   range_in * [cosd(ang_in); sind(ang_in); 0], ...          % Position input if 'static' is used
-    'vel_st',   [vel_in; 0; 0], ...          % Velocity input if 'static' is used
+    'pos_st',   [0; 0; 0], ...          % Position input if 'static' is used
+    'vel_st',   [0; 0; 0], ...          % Velocity input if 'static' is used
     ...
     ... % Model options
-    'model',    'linear');              % Set 'static', 'model', 'linear', or 'model_constant'
+    'model',    'model');              % Set 'static', 'model', 'linear', or 'model_constant'
 
 % Run Trajectory model
 scenario.traj = TrajectoryModel(scenario.traj);

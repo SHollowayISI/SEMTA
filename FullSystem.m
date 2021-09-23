@@ -8,12 +8,8 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - Fix beamsteering prediction
-        - Separate CPIs 
-        - Multiple 
-        - Multistatic processing
-        - Save detection coordinates
         - Frequency diversity
+        - RCS aspect angle dependent upon velocity direction
 
     Notes to self:
         - Frequency hopping can be implemented via FrequencyOffset port on

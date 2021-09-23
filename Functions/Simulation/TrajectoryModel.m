@@ -37,11 +37,33 @@ end
 
 % Calculate position
 function currentPos = positionModelConstant(traj, time)
-    yvel_mod = sqrt(traj.yvel.^2 - ...
-        (traj.per * traj.exc * cos(traj.per * time)).^2);
+    
+    % Note: Complicated function due to the fact that integrating the
+    % velocity function does not have a solution in terms of standard
+    % functions
+    a = traj.per;
+    b = traj.exc;
+    c = traj.yvel;
+    x = a * time * 2 / pi;
+%     phi = mod((x+1), 2) - 1;
+    phi = mod(x + 1, 2) - 1;
+    phi_int = x - phi;
+    m = ((a*b)^2)/(a*a*b*b - c*c);
+    e = phi_int * mEllipticE(m);
+    yPos = e * (sqrt(c*c - a*a*b*b) / a);
+    
+    
+    x_pos = a * sin(b * time);
+    u = (c*c - a*a*b*b) / (a*a*b*b);
+    pos = (a*b / 2) * (x_pos.*sqrt(u + x_pos.*x_pos) + u*log(sqrt(u+x_pos.*x_pos) + x_pos));
+    yPos = yPos + pos;
+    
+%     yPos = (c^2 - (a*b)^2) * sqrt((a*a*b*b*cos(2*a*time) + a*a*b*b - 2*c*c) / (a*a*b*b - c*c)) ...
+%         .* e ./ (a*sqrt(-a*a*b*b*cos(2*a*time) - a*a*b*b + 2*c*c));
+    
     currentPos = ...
         [traj.exc * sin(traj.per * time); ...
-        cumsum(yvel_mod * (time(2)-time(1)) .* ones(size(time))); ...
+        yPos; ...
         ones(size(time)) * traj.alt];
 end
 

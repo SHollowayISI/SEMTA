@@ -17,14 +17,6 @@
 % Start timing for estimation
 timeStart(scenario);
 
-meas_single = nan(2,scenario.multi.n_fr,scenario.multi.n_re);
-track_single = meas_single;
-track_single_pre = meas_single;
-% 
-% xyvar = nan(4, scenario.multi.n_fr, scenario.multi.n_re);
-
-% fom_limit = nan(scenario.multi.n_fr, scenario.multi.n_re);
-
 % Loop through radar units
 for unit = 1:scenario.multi.n_re
     
@@ -63,6 +55,11 @@ for unit = 1:scenario.multi.n_re
         
     end
     
+    % Post-process tracking
+    if scenario.radarsetup.tracking_single.bi_single
+        scenario = Tracking_SingleUnit_Bidirectional(scenario);
+    end
+    
     % Reset parameters for new unit
     unitReset(scenario);
     
@@ -95,10 +92,10 @@ end
 scenario.tracking_multi = DataFusion(scenario);
 
 % Perform Kalman filter tracking on fused sensor data
-if strcmp(scenario.radarsetup.tracking_single.track_dir, 'combined')
+if scenario.radarsetup.tracking_single.bi_multi
     scenario.tracking_multi = Tracking_Multi_Bidirectional(scenario);
 else
-    scenario.tracking_multi = Tracking_Multi(scenario, scenario.radarsetup.tracking_single.track_dir);
+    scenario.tracking_multi = Tracking_Multi(scenario, 'forward');
 end
 
 % Visualize multilateration result

@@ -59,6 +59,7 @@ if det_logical
         track.meas{frame} = targetToNewTrack(det_list); 
         track.isActive = true;
         track.hit_list(frame) = true;
+        track.misses = 0;
     end
 else
     
@@ -71,7 +72,7 @@ end
 
 % Update Kalman tracking filter
 if track.isActive
-    track = KalmanFilter_SingleUnit(track, rs, ts, frame);
+    track = KalmanFilter_SingleUnit(track, rs, ts, frame, 'forward');
 end
 
 %% Pack Variables
