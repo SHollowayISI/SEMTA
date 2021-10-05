@@ -32,13 +32,17 @@ nm = 1852;
 dist_from_center = dist_in;
 unit_spacing = spacing_in;
 
-start = spacing_in * rand(1);
+% start = spacing_in * rand(1);
+start = -3200;
 v = scenario.traj.yvel;
 
 stop = start + frames_in * v * 0.0512;
 early_unit = 1 - round(start / unit_spacing);
 spacing_offset = - start - early_unit*unit_spacing;
 num_receivers = 2 + round(stop / unit_spacing) + early_unit;
+
+% spacing_offset = -start;
+% num_receivers = 3;
 
 radar_pos = ...
     [-dist_from_center  * ones(1,num_receivers); ...     % Constant x location

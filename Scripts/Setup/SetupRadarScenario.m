@@ -30,7 +30,7 @@ scenario.radarsetup = struct( ...
     'rx_ant_gain',  27, ...             % Rx antenna gain in dB 
     'tx_ant_gain',  27, ...             % Tx antenna gain in dB 
     'rx_nf',        4, ...              % Rx noise figure in dB
-    'range_off',    false, ...          % Correct range with offset function
+    'range_off',    true, ...          % Correct range with offset function
     'beamwidth',    6.335, ...              % Antenna beamwidth in degrees
     'mono_coeff',   -1.4817, ...        % Coefficient in monopulse AoA linear approximation
     'phase_bits',   6, ...              % Number of bits for phase shifter resolution Nbits = log2(360/resolution)
@@ -50,13 +50,16 @@ scenario.radarsetup = struct( ...
 
 % Tracking Parameters
 tracking = struct( ...
-    'max_vel',          250, ...            % Maximum possible speed for coarse gating
-    'dist_thresh',      Inf, ...13.8, ...           % Mahanalobis distance threshold for fine gating
-    'miss_max',         Inf, ...              % Number of misses required to inactivate track
-    'EKF',              false, ...          % T/F use extended Kalman filter
-    'sigma_v',          1*[1, 1], ...       % XY target motion uncertainty 
-    'sigma_v_multi',    1*[1, 1], ...       % Motion uncertainty for multilaterated tracking
-    'track_dir',        'combined');        % 'forward', 'reverse', or 'combined'
+    'max_vel',           250, ...            % Maximum possible speed for coarse gating
+    'dist_thresh',       13.8, ...           % Mahanalobis distance threshold for fine gating
+    'miss_max',          5, ...              % Number of misses required to inactivate track
+    'EKF',               false, ...          % T/F use extended Kalman filter
+    'sigma_v',           [sig_x_in, sig_y_in], ...       % XY target motion uncertainty 
+    'sigma_v_multi',     [], ...       % Motion uncertainty for multilaterated tracking
+    'bi_multi',          true, ...        % Use bidirectional tracking?
+    'bi_single',         true, ...
+    'limitSensorFusion', true);         % Only take top two sensor results
+tracking.sigma_v_multi = tracking.sigma_v;
 
 scenario.radarsetup.tracking_single = tracking;
 

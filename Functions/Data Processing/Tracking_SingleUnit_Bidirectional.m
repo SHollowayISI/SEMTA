@@ -16,7 +16,7 @@ track.estimate = cell(scenario.multi.n_fr, 1);
 
 track_forward = Tracking_SingleUnit_Post(scenario, unit, 'forward');
 track_reverse = Tracking_SingleUnit_Post(scenario, unit, 'reverse');
-hit_list = track_forward.hit_list & track_reverse.hit_list;
+hit_list = track_forward.hit_list | track_reverse.hit_list;
 
 %% Perform data fusion
 

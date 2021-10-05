@@ -42,7 +42,7 @@ for fr = fr_ind
         
         % Set flags/variables
         track_out.misses = track_out.misses + 1;
-        track_out.isActive = (track_out.misses > ts.miss_max);
+        track_out.isActive = track_out.isActive && (track_out.misses < ts.miss_max);
     end
     
     % Perform track filtering

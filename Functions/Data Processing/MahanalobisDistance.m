@@ -15,7 +15,7 @@ if ts.EKF
     R = generateMeasCovariance(track.meas{last_hit_frame}, rs);
 else
 %     R = (ts.sigma_z.^2) .* eye(2);
-    R_ekf = generateMeasCovariance(track.meas{last_hit_frame}, rs);
+    R_ekf = generateStateCovariance(track.meas{last_hit_frame}, rs, ts);
     R = R_ekf([1 3], [1 3]);
 end
 
@@ -76,8 +76,6 @@ else
     H = [1, 0, 0, 0; ...
          0, 0, 1, 0];
 end
-
-%% Calculate State Variables
 
 
 %% Calculate Mahanalobis Distance

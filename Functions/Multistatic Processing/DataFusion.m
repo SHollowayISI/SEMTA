@@ -35,7 +35,8 @@ for fr = 1:multi.n_fr
             
             if ts{re}.hit_list(fr)
                 var = diag(ts{re}.estimate{fr}.covar);
-                variance_measure(re) = 1 ./ sum(1 ./ var([1 3]));
+%                 variance_measure(re) = 1 ./ sum(1 ./ var([1 3]));
+                variance_measure(re) = sum(var([1 3]));
             else
                 variance_measure(re) = Inf;
             end
@@ -49,7 +50,9 @@ for fr = 1:multi.n_fr
     end
     
     % Loop through receivers
-    for re = re_list'
+    for re_ind = 1:length(re_list)
+        
+        re = re_list(re_ind);
         
         % Only add if receiver detected target
         if ts{re}.hit_list(fr)

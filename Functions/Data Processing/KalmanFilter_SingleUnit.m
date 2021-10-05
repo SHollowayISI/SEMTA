@@ -61,10 +61,10 @@ if ts.EKF
     end
 else
     if ~isempty(meas)
-        R_ekf = generateMeasCovariance(meas, rs);
+        R_ekf = generateStateCovariance(meas, rs, ts);
         R = R_ekf([1 3], [1 3]);
     else
-        R_ekf = generateMeasCovariance(track.meas{last_hit_frame}, rs);
+        R_ekf = generateStateCovariance(track.meas{last_hit_frame}, rs, ts);
         R = R_ekf([1 3], [1 3]);
     end
 %     R = (ts.sigma_z.^2) .* eye(2);

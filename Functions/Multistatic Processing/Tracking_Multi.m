@@ -13,6 +13,7 @@ tsm = rs.tracking_single;
 % Set up new structs
 tracking_multi.track_estimate = cell(multi.n_fr, 1);
 tracking_multi.track_prediction = cell(multi.n_fr, 1);
+tracking_multi.hit_list_out = true(multi.n_fr, 1);
 
 
 %% Target Tracking
@@ -47,7 +48,13 @@ for fr = fr_ind
             % Save results
             tracking_multi = ...
                 saveStepData(tracking_multi, fr, X_init, P_init, X_init, P_init);
+        else
+            
+            % Set output hit list
+            tracking_multi.hit_list_out(fr) = false;
+            
         end
+            
         
     else
         

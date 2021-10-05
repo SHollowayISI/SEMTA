@@ -14,17 +14,17 @@ tracking_multi.track_estimate = cell(scenario.multi.n_fr, 1);
 
 track_forward = Tracking_Multi(scenario, 'forward');
 track_reverse = Tracking_Multi(scenario, 'reverse');
-hit_list = track_forward.hit_list & track_reverse.hit_list;
+combined_hit_list = track_forward.hit_list_out & track_reverse.hit_list_out;
 
 %% Perform data fusion
 
 for fr = 1:scenario.multi.n_fr
     
-    if hit_list(fr)
-        
-        % Unpack structures
-        est_f = track_forward.track_estimate{fr};
-        est_r = track_reverse.track_estimate{fr};
+    % Unpack structures
+    est_f = track_forward.track_estimate{fr};
+    est_r = track_reverse.track_estimate{fr};
+    
+    if combined_hit_list(fr)
         
         % Perform inverse variance weighting
         var_sum = (1 ./ diag(est_f.covar)) + (1 ./ diag(est_r.covar));
@@ -38,9 +38,29 @@ for fr = 1:scenario.multi.n_fr
         tracking_multi.track_estimate{fr}.pos = state_new([1 3]);
         tracking_multi.track_estimate{fr}.vel = state_new([2 4]);
         
+    elseif track_forward.hit_list_out(fr)
+        
+        % Save only forward results
+        tracking_multi.track_estimate{fr}.state = est_f.state;
+        tracking_multi.track_estimate{fr}.covar = est_f.covar;
+        tracking_multi.track_estimate{fr}.pos = est_f.state([1 3]);
+        tracking_multi.track_estimate{fr}.vel = est_f.state([2 4]);
+        
+    elseif track_reverse.hit_list_out(fr)
+        
+        % Save only forward results
+        tracking_multi.track_estimate{fr}.state = est_r.state;
+        tracking_multi.track_estimate{fr}.covar = est_r.covar;
+        tracking_multi.track_estimate{fr}.pos = est_r.state([1 3]);
+        tracking_multi.track_estimate{fr}.vel = est_r.state([2 4]);
+        
     end
     
 end
+
+%% Generate new detection list
+
+tracking_multi.bi_hit_list = track_forward.hit_list_out | track_reverse.hit_list_out;
 
 end
 
