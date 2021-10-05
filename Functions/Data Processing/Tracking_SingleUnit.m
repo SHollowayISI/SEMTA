@@ -149,7 +149,7 @@ function [nextRange] = predictRange(track)
     % Calculate next range prediction
     Tm = rs.frame_time;
     X = track.estimate{frame-1}.state;
-    nextRange = sqrt((X(1) + Tm*X(2))^2 + (X(3) + Tm*X(4))^2);
+    nextRange = sqrt((X(1) + Tm*X(2))^2 + (X(4) + Tm*X(5))^2);
 end
 
 end

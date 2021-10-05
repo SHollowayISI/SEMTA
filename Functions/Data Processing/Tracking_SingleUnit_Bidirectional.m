@@ -37,10 +37,10 @@ for fr = 1:scenario.multi.n_fr
         % Save data
         track.estimate{fr}.state = state_new;
         track.estimate{fr}.covar = var_new;
-        track.estimate{fr}.cart = state_new([1 3]);
-        track.estimate{fr}.az = atand(state_new(3) / state_new(1));
-        track.estimate{fr}.range = sqrt(sum(state_new([1 3]).^2));
-        track.estimate{fr}.speed = sqrt(sum(state_new([2 4]).^2));
+        track.estimate{fr}.cart = state_new([1 4]);
+        track.estimate{fr}.az = atand(state_new(4) / state_new(1));
+        track.estimate{fr}.range = sqrt(sum(state_new([1 4]).^2));
+        track.estimate{fr}.speed = sqrt(sum(state_new([2 5]).^2));
         
     end
     

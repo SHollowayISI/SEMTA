@@ -25,14 +25,15 @@ if isempty(hit_ind)
     X_init = [...
         meas.cart(1);  ...
         meas.vel * cosd(meas.az); ...
+        0; ...
         meas.cart(2); ...
-        meas.vel * sind(meas.az)];
+        meas.vel * sind(meas.az); ...
+        0];
          
     % Use measurement uncertainties as covariance prediction
     if ts.EKF
         P_init = generateStateCovariance(meas, rs, ts);
     else
-%         P_init = diag([sigma_z(1), 0, sigma_z(2), 0]);
         P_init = generateStateCovariance(meas, rs, ts);
     end
         
@@ -62,24 +63,37 @@ if ts.EKF
 else
     if ~isempty(meas)
         R_ekf = generateStateCovariance(meas, rs, ts);
-        R = R_ekf([1 3], [1 3]);
+        R = R_ekf([1 4], [1 4]);
     else
         R_ekf = generateStateCovariance(track.meas{last_hit_frame}, rs, ts);
-        R = R_ekf([1 3], [1 3]);
+        R = R_ekf([1 4], [1 4]);
     end
-%     R = (ts.sigma_z.^2) .* eye(2);
 end
 
-% Process covariance matrix (DWNA assumption)
-Q_1d = [(Tm^4)/4, (Tm^3)/2; ...
-        (Tm^3)/2, (Tm^2)];
-Q = [Q_1d*(ts.sigma_v(1)^2), zeros(2); ...
-    zeros(2), Q_1d*(ts.sigma_v(2)^2)];
+% % Process covariance matrix (DWNA assumption)
+% Q_1d = [(Tm^4)/4, (Tm^3)/2; ...
+%         (Tm^3)/2, (Tm^2)];
+% Q = [Q_1d*(ts.sigma_v(1)^2), zeros(2); ...
+%     zeros(2), Q_1d*(ts.sigma_v(2)^2)];
+% 
+% % Kinematic process matrix
+% F_1d = [1, Tm; 0, 1];
+% F = [F_1d, zeros(2); ...
+%     zeros(2), F_1d];
 
+% Process covariance matrix (NCA model)
+Q_1d = [(Tm^4)/4, (Tm^3)/2, (Tm^2)/2; ...
+        (Tm^3)/2, (Tm^2),   (Tm); ...
+        (Tm^2)/2, (Tm),     1];
+Q = [Q_1d*(ts.sigma_v(1)^2), zeros(size(Q_1d)); ...
+     zeros(size(Q_1d)), Q_1d*(ts.sigma_v(2)^2)];
+    
 % Kinematic process matrix
-F_1d = [1, Tm; 0, 1];
-F = [F_1d, zeros(2); ...
-    zeros(2), F_1d];
+F_1d =  [1,     (Tm),   (Tm^2)/2; ...
+         0,     1,      (Tm); ...
+         0,     0,      1];
+F = [F_1d, zeros(size(F_1d)); ...
+    zeros(size(F_1d)), F_1d];
 
 %% Prediction Step
 
@@ -139,8 +153,8 @@ if ts.EKF
 else
     
     % Measurement matrix
-    H = [1, 0, 0, 0; ...
-         0, 0, 1, 0];
+    H = [1, 0, 0, 0, 0, 0; ...
+         0, 0, 0, 1, 0, 0];
     
     % Measurement residual
     Z_res = Z - (H * X_pre);
@@ -174,20 +188,20 @@ function [track] = saveStepData(track, frame, X_est, P_est, X_pre, P_pre)
     track.estimate{frame}.covar = P_est;
 
     % Save human readable data
-    track.estimate{frame}.range = sqrt(X_est(1)^2 + X_est(3)^2);
-    track.estimate{frame}.speed = sqrt(X_est(2)^2 + X_est(4)^2);
-    track.estimate{frame}.cart = X_est([1; 3]);
-    track.estimate{frame}.az = atand(X_est(3) / X_est(1));
+    track.estimate{frame}.range = sqrt(X_est(1)^2 + X_est(4)^2);
+    track.estimate{frame}.speed = sqrt(X_est(2)^2 + X_est(5)^2);
+    track.estimate{frame}.cart = X_est([1; 4]);
+    track.estimate{frame}.az = atand(X_est(4) / X_est(1));
 
     % Save predictions
     track.prediction{frame}.state = X_pre;
     track.prediction{frame}.covar = P_pre;
 
     % Save human readable data (prediction)
-    track.prediction{frame}.range = sqrt(X_pre(1)^2 + X_pre(3)^2);
-    track.prediction{frame}.speed = sqrt(X_pre(2)^2 + X_pre(4)^2);
-    track.prediction{frame}.cart = X_pre([1; 3]);
-    track.prediction{frame}.az = atand(X_pre(3) / X_pre(1));
+    track.prediction{frame}.range = sqrt(X_pre(1)^2 + X_pre(4)^2);
+    track.prediction{frame}.speed = sqrt(X_pre(2)^2 + X_pre(5)^2);
+    track.prediction{frame}.cart = X_pre([1; 4]);
+    track.prediction{frame}.az = atand(X_pre(4) / X_pre(1));
     
 end
 
@@ -202,6 +216,7 @@ function [P] = generateStateCovariance(meas, rs, ts)
     
     % Calculate uncertainty matrix
     speed_unc = sqrt((ts.max_vel)^2 / 3);
+    accel_unc = sqrt((ts.max_acc)^2 / 3);
     az_rad = deg2rad(meas.az);
     P = diag([ ...
         (sig_R * cos(az_rad))^2 ...
@@ -209,11 +224,13 @@ function [P] = generateStateCovariance(meas, rs, ts)
         (sig_V * cos(az_rad))^2 ...
         + (speed_unc * meas.range * sin(az_rad))^2 ...
         + (sig_A * meas.vel * sin(az_rad))^2, ...
+        accel_unc, ...
         (sig_R * sin(az_rad))^2 ...
         + (sig_A * meas.range * cos(az_rad))^2, ...
         (sig_V * sin(az_rad))^2 ...
         + (speed_unc * meas.range * cos(az_rad))^2 ...
-        + (sig_A * meas.vel * cos(az_rad))^2]);
+        + (sig_A * meas.vel * cos(az_rad))^2, ...
+        accel_unc]);
         
 end
 

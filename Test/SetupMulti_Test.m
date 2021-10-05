@@ -32,8 +32,8 @@ nm = 1852;
 dist_from_center = dist_in;
 unit_spacing = spacing_in;
 
-% start = spacing_in * rand(1);
-start = -3200;
+start = spacing_in * rand(1);
+% start = -3200;
 v = scenario.traj.yvel;
 
 stop = start + frames_in * v * 0.0512;

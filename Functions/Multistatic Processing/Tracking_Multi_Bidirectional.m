@@ -35,24 +35,24 @@ for fr = 1:scenario.multi.n_fr
         % Save data
         tracking_multi.track_estimate{fr}.state = state_new;
         tracking_multi.track_estimate{fr}.covar = var_new;
-        tracking_multi.track_estimate{fr}.pos = state_new([1 3]);
-        tracking_multi.track_estimate{fr}.vel = state_new([2 4]);
+        tracking_multi.track_estimate{fr}.pos = state_new([1 4]);
+        tracking_multi.track_estimate{fr}.vel = state_new([2 5]);
         
     elseif track_forward.hit_list_out(fr)
         
         % Save only forward results
         tracking_multi.track_estimate{fr}.state = est_f.state;
         tracking_multi.track_estimate{fr}.covar = est_f.covar;
-        tracking_multi.track_estimate{fr}.pos = est_f.state([1 3]);
-        tracking_multi.track_estimate{fr}.vel = est_f.state([2 4]);
+        tracking_multi.track_estimate{fr}.pos = est_f.state([1 4]);
+        tracking_multi.track_estimate{fr}.vel = est_f.state([2 5]);
         
     elseif track_reverse.hit_list_out(fr)
         
         % Save only forward results
         tracking_multi.track_estimate{fr}.state = est_r.state;
         tracking_multi.track_estimate{fr}.covar = est_r.covar;
-        tracking_multi.track_estimate{fr}.pos = est_r.state([1 3]);
-        tracking_multi.track_estimate{fr}.vel = est_r.state([2 4]);
+        tracking_multi.track_estimate{fr}.pos = est_r.state([1 4]);
+        tracking_multi.track_estimate{fr}.vel = est_r.state([2 5]);
         
     end
     

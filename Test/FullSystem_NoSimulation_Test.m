@@ -37,8 +37,8 @@ StartProcess;
 % dist_list = 1000*(1:7);
 spacing_list = 1000*(1:10);
 dist_list = 1000*(1:6);
-% spacing_list = 10000;
-% dist_list = 6000;
+% spacing_list = 3000;
+% dist_list = 3000;
 
 num_iter = 25;
 num_frames = 500;
@@ -57,8 +57,8 @@ num_fail = num_miss;
 
 tic;
 
-sig_x_in = 5;
-sig_y_in = 0.5;
+sig_x_in = 0.09;
+sig_y_in = 0;
 
 for dist_ind = 1:length(dist_list)
     for spacing_ind = 1:length(spacing_list)
@@ -127,7 +127,7 @@ end
 
 MultiPlot_Scratch2
 
-% save('MultiErrorTest.mat', 'error_out', 'mean_out', 'std_out', 'rms_out', 'max_out', 'num_miss', 'spacing_list', 'dist_list');
+save('Varied.mat', 'traj_out', 'est_out', 'single_out', 'error_out', 'mean_out', 'std_out', 'rms_out', 'max_out', 'num_miss', 'num_fail', 'spacing_list', 'dist_list');
 
 %% Save Figures and Data
 

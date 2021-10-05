@@ -36,7 +36,7 @@ for fr = 1:multi.n_fr
             if ts{re}.hit_list(fr)
                 var = diag(ts{re}.estimate{fr}.covar);
 %                 variance_measure(re) = 1 ./ sum(1 ./ var([1 3]));
-                variance_measure(re) = sum(var([1 3]));
+                variance_measure(re) = sum(var([1 4]));
             else
                 variance_measure(re) = Inf;
             end
@@ -64,7 +64,7 @@ for fr = 1:multi.n_fr
             
             % Adjust for unit position
             state(1) = state(1) + multi.radar_pos(1,re);
-            state(3) = state(3) + multi.radar_pos(2,re);
+            state(4) = state(4) + multi.radar_pos(2,re);
             
             % Update running sums
             num_detect = num_detect + 1;

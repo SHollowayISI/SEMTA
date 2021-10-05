@@ -33,8 +33,8 @@ StartProcess;
 
 %% Testing Loop
 
-sig_x_list = 6:10;
-sig_y_list = 0.5;
+sig_x_list = 0.01*(7.5:0.5:9.5);
+sig_y_list = 0;
 num_iter = 25;
 num_frames = 500;
 

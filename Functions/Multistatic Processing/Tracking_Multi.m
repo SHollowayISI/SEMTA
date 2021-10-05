@@ -66,17 +66,31 @@ for fr = fr_ind
         
         % Calculate model matrices
         R = tracking_multi.var{fr};
+
+        % % Process covariance matrix (DWNA assumption)
+        % Q_1d = [(Tm^4)/4, (Tm^3)/2; ...
+        %         (Tm^3)/2, (Tm^2)];
+        % Q = [Q_1d*(ts.sigma_v(1)^2), zeros(2); ...
+        %     zeros(2), Q_1d*(ts.sigma_v(2)^2)];
+        %
+        % % Kinematic process matrix
+        % F_1d = [1, Tm; 0, 1];
+        % F = [F_1d, zeros(2); ...
+        %     zeros(2), F_1d];
         
-        % Process covariance matrix (DWNA assumption)
-        Q_1d = [(Tm^4)/4, (Tm^3)/2; ...
-            (Tm^3)/2, (Tm^2)];
-        Q = [Q_1d*(tsm.sigma_v_multi(1)^2), zeros(2); ...
-            zeros(2), Q_1d*(tsm.sigma_v_multi(2)^2)];
+        % Process covariance matrix (NCA model)
+        Q_1d = [(Tm^4)/4, (Tm^3)/2, (Tm^2)/2; ...
+            (Tm^3)/2, (Tm^2),   (Tm); ...
+            (Tm^2)/2, (Tm),     1];
+        Q = [Q_1d*(tsm.sigma_v_multi(1)^2), zeros(size(Q_1d)); ...
+            zeros(size(Q_1d)), Q_1d*(tsm.sigma_v_multi(2)^2)];
         
         % Kinematic process matrix
-        F_1d = [1, Tm; 0, 1];
-        F = [F_1d, zeros(2); ...
-            zeros(2), F_1d];
+        F_1d =  [1,     (Tm),   (Tm^2)/2; ...
+            0,     1,      (Tm); ...
+            0,     0,      1];
+        F = [F_1d, zeros(size(F_1d)); ...
+            zeros(size(F_1d)), F_1d];
         
         %% Prediction Step
         
@@ -99,7 +113,7 @@ for fr = fr_ind
         Z = tracking_multi.state{fr};
         
         % Measurement matrix
-        H = eye(4);
+        H = eye(6);
         
         % Measurement residual
         Z_res = Z - (H * X_pre);
@@ -139,16 +153,16 @@ function [tm] = saveStepData(tm, fr, X_est, P_est, X_pre, P_pre)
     tm.track_estimate{fr}.covar = P_est;
     
     % Save human readable data
-    tm.track_estimate{fr}.pos = X_est([1; 3]);
-    tm.track_estimate{fr}.vel = X_est([2; 4]);
+    tm.track_estimate{fr}.pos = X_est([1; 4]);
+    tm.track_estimate{fr}.vel = X_est([2; 5]);
     
     % Save predictions
     tm.track_prediction{fr}.state = X_pre;
     tm.track_prediction{fr}.covar = P_pre;
     
     % Save human readable data (prediction)
-    tm.track_prediction{fr}.pos = X_pre([1; 3]);
-    tm.track_prediction{fr}.vel = X_pre([2; 4]);
+    tm.track_prediction{fr}.pos = X_pre([1; 4]);
+    tm.track_prediction{fr}.vel = X_pre([2; 5]);
     
 end
 
