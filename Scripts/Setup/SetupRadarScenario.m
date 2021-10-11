@@ -51,15 +51,15 @@ scenario.radarsetup = struct( ...
 % Tracking Parameters
 tracking = struct( ...
     'max_vel',           250, ...            % Maximum possible speed for coarse gating
+    'max_acc',           1, ...              % Maximum possible acceleration for uncertainty estimation
     'dist_thresh',       13.8, ...           % Mahanalobis distance threshold for fine gating
     'miss_max',          5, ...              % Number of misses required to inactivate track
     'EKF',               false, ...          % T/F use extended Kalman filter
-    'sigma_v',           [sig_x_in, sig_y_in], ...       % XY target motion uncertainty 
-    'sigma_v_multi',     [], ...       % Motion uncertainty for multilaterated tracking
+    'sigma_v',           [0.09, 0], ...       % XY target motion uncertainty 
+    'sigma_v_multi',     [0.09, 0], ...       % Motion uncertainty for multilaterated tracking
     'bi_multi',          true, ...        % Use bidirectional tracking?
     'bi_single',         true, ...
     'limitSensorFusion', true);         % Only take top two sensor results
-tracking.sigma_v_multi = tracking.sigma_v;
 
 scenario.radarsetup.tracking_single = tracking;
 
