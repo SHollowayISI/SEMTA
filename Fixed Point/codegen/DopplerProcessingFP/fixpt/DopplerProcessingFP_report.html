@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Fixed-Point Report for DopplerProcessingFP, RangeProcessingFP</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+	body { font-family: monospace; }
+	h2 { font-family: Arial, Helvetica, sans-serif; color: #990000; margin-top: 50px; }
+	table,th,td { border: 1px solid black; }
+	table { margin-top: 30px; }
+	th { align: center; font-weight: bold; }
+	tr.h { background-color: #99CCFF; }
+	tr.a { background-color: #EEEEFF; }
+	tr.b { background-color: #FFFFFF; }
+	tr.c { background-color: #FFA500; }
+	tr.a td, tr.b td { border-style: none; }
+	td.left { text-align: left; }
+	td.right { text-align: right; }
+	td.center { text-align: center; }
+	td.bold { font-weight: bold; }
+	pre { padding: 0px; margin: 0px; }
+	span { font-style: italic; }
+	.code, .code tr, .code th, .code td { border: none; border-collapse: collapse; }
+	.padd { padding-left: 5px; }
+	td.cov, th.cov { width: 50px; height: 20px; text-align: center; font-weight: bold; border-right: 2px solid black; cell-spacing: 0px; }
+	td.cov { vertical-align: top; }
+	td.black { color: #000000; font-weight: bold; padding-top: 4px; }
+	td.white { color: #FFFFFF; font-weight: bold; padding-top: 4px; }
+	.code th { font-weight: bold; border-bottom: 2px solid black; }
+</style>
+</head>
+<body>
+<h3>Generated on  2021-10-11 16:32:57</h3>
+<p>The following table shows fixed point instrumentation results</p>
+<h2>Fixed-Point Report <span>DopplerProcessingFP<span></h2>
+<TABLE class="code">
+<TR>
+<TH class="cov padd">Simulation Coverage</TH>
+<TH>Code</TH>
+</TR>
+<TR>
+<TD class="cov white" style="background-color: rgb(5,112,9);">100%</TD>
+<TD class="padd"><pre>function y = DopplerProcessingFP(x)
+%DOPPLERPROCESSINGFP Fixed point Doppler processing
+%   Takes range-processed signal as input, returns FFT
+
+%% Set up FFT object
+
+% Instantiate FFT object
+ft = dsp.FFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'BitReversedOutput',        false, ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                1024, ...
+    'WrapInput',                true);
+
+%% Perform Doppler FFT
+
+% Take FFT of input signal
+X_f = ft(x);
+
+% FFT shift signal
+y = fftshift(X_f);
+
+end</pre></TD>
+</TR>
+</TABLE>
+<TABLE><TR class="h"><th>Variable Name</th><th>Type</th><th>Sim Min</th><th>Sim Max</th><th>Static Min</th><th>Static Max</th><th>Whole Number</th><th>ProposedType <BR /> (Best For WL = 32)</th></TR><TR class="a">
+<TD class="left">X_f</TD><TD class="left">double 1024 x 1 complex </TD><TD class="right">-53.76723246506968</TD><TD class="right">51.18780567910699</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 25)</TD></TR>
+<TR class="a">
+<TD class="left">x</TD><TD class="left">double 1024 x 1 complex </TD><TD class="right">-0.054162049540316705</TD><TD class="right">0.051605786548473684</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 35)</TD></TR>
+<TR class="b">
+<TD class="left">y</TD><TD class="left">double 1024 x 1 complex </TD><TD class="right">-53.76723246506968</TD><TD class="right">51.18780567910699</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 25)</TD></TR>
+</TABLE>
+
+<h2>Fixed-Point Report <span>RangeProcessingFP<span></h2>
+<TABLE class="code">
+<TR>
+<TH class="cov padd">Simulation Coverage</TH>
+<TH>Code</TH>
+</TR>
+<TR>
+<TD class="cov white" style="background-color: rgb(5,112,9);">100%</TD>
+<TD class="padd"><pre>function y = RangeProcessingFP(x, x_ref)
+%RANGEPROCESSINGFP Fixed point range processing
+%   Takes receieved and reference signals as input, returns correlation
+%   along first dimension
+
+%% Set up FFT object
+
+% Instantiate FFT object
+ft = dsp.FFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'BitReversedOutput',        false, ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                2048, ...
+    'WrapInput',                true);
+
+% Instantiate IFFT object
+ift = dsp.IFFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                2048, ...
+    'WrapInput',                true);
+
+%% Perform correlation
+
+% Take FFT of input signal
+X_f = ft(x);
+
+% Multiply by reference signal
+X_f = X_f .* x_ref;
+
+% Take inverse FFT
+y = ift(X_f);
+
+% Remove out of range bins
+y = y(1:1250);
+
+
+end</pre></TD>
+</TR>
+</TABLE>
+<TABLE><TR class="h"><th>Variable Name</th><th>Type</th><th>Sim Min</th><th>Sim Max</th><th>Static Min</th><th>Static Max</th><th>Whole Number</th><th>ProposedType <BR /> (Best For WL = 32)</th></TR><TR class="a">
+<TD class="left">X_f</TD><TD class="left">double 2048 x 1 complex </TD><TD class="right">-0.00020605133851258895</TD><TD class="right">0.000199913009666356</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 43)</TD></TR>
+<TR class="b">
+<TD class="left">x</TD><TD class="left">double 1250 x 1 complex </TD><TD class="right">-3.1348485273611123e-07</TD><TD class="right">3.077612538036967e-07</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 52)</TD></TR>
+<TR class="a">
+<TD class="left">x_ref</TD><TD class="left">double 2048 x 1 complex </TD><TD class="right">-24.957484506908052</TD><TD class="right">24.834403381084037</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 26)</TD></TR>
+<TR class="b">
+<TD class="left">y > 1</TD><TD class="left">double 1250 x 1 complex </TD><TD class="right">-0.054162049540316705</TD><TD class="right">0.03883258213191035</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 35)</TD></TR>
+<TR class="a">
+<TD class="left">y > 2</TD><TD class="left">double 2048 x 1 complex </TD><TD class="right">-0.054162049540316705</TD><TD class="right">0.03883258213191035</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(1, 32, 35)</TD></TR>
+</TABLE>
+
+</body>
+</html>

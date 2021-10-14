@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Fixed-Point Report for DopplerProcessingFP_fixpt, RangeProcessingFP_fixpt</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+	body { font-family: monospace; }
+	h2 { font-family: Arial, Helvetica, sans-serif; color: #990000; margin-top: 50px; }
+	table,th,td { border: 1px solid black; }
+	table { margin-top: 30px; }
+	th { align: center; font-weight: bold; }
+	tr.h { background-color: #99CCFF; }
+	tr.a { background-color: #EEEEFF; }
+	tr.b { background-color: #FFFFFF; }
+	tr.c { background-color: #FFA500; }
+	tr.a td, tr.b td { border-style: none; }
+	td.left { text-align: left; }
+	td.right { text-align: right; }
+	td.center { text-align: center; }
+	td.bold { font-weight: bold; }
+	pre { padding: 0px; margin: 0px; }
+	span { font-style: italic; }
+</style>
+</head>
+<body>
+<h3>Generated on  2021-10-11 16:35:31</h3>
+<p>The following table shows fixed point instrumentation results</p>
+<h2>Fixed-Point Report <span>DopplerProcessingFP_fixpt<span></h2>
+<pre>function y = DopplerProcessingFP_fixpt(x)
+%DOPPLERPROCESSINGFP Fixed point Doppler processing
+%   Takes range-processed signal as input, returns FFT
+
+%% Set up FFT object
+
+% Instantiate FFT object
+fm = get_fimath();
+
+ft = dsp.FFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'BitReversedOutput',        false, ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                1024, ...
+    'WrapInput',                true);
+
+%% Perform Doppler FFT
+
+% Take FFT of input signal
+X_f = fi(ft(x), 1, 32, 25, fm);
+
+% FFT shift signal
+y = fi(fftshift(X_f), 1, 32, 25, fm);
+
+end</pre><TABLE><TR class="h"><th>Variable Name</th><th>Type</th><th>Sim Min</th><th>Sim Max</th></TR><TR class="a">
+<TD class="left">X_f</TD><TD class="left">numerictype(1, 32, 25) 1024 x 1 complex </TD><TD class="right">-53.76723247766495</TD><TD class="right">51.18780565261841</TD></TR>
+<TR class="a">
+<TD class="left">x</TD><TD class="left">numerictype(1, 32, 35) 1024 x 1 complex </TD><TD class="right">-0.054162049549631774</TD><TD class="right">0.05160578654613346</TD></TR>
+<TR class="b">
+<TD class="left">y</TD><TD class="left">numerictype(1, 32, 25) 1024 x 1 complex </TD><TD class="right">-53.76723247766495</TD><TD class="right">51.18780565261841</TD></TR>
+</TABLE>
+
+<h2>Fixed-Point Report <span>RangeProcessingFP_fixpt<span></h2>
+<pre>function y = RangeProcessingFP_fixpt(x, x_ref)
+%RANGEPROCESSINGFP Fixed point range processing
+%   Takes receieved and reference signals as input, returns correlation
+%   along first dimension
+
+%% Set up FFT object
+
+% Instantiate FFT object
+fm = get_fimath();
+
+ft = dsp.FFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'BitReversedOutput',        false, ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                2048, ...
+    'WrapInput',                true);
+
+% Instantiate IFFT object
+ift = dsp.IFFT( ...
+    'FFTImplementation',        'Radix-2', ...
+    'Normalize',                false, ...
+    'FFTLengthSource',          'Property', ...
+    'FFTLength',                2048, ...
+    'WrapInput',                true);
+
+%% Perform correlation
+
+% Take FFT of input signal
+X_f = fi(ft(x), 1, 32, 43, fm);
+
+% Multiply by reference signal
+X_f(:) = X_f .* x_ref;
+
+% Take inverse FFT
+y = fi(ift(X_f), 1, 32, 35, fm);
+
+% Remove out of range bins
+y = fi(y(1:1250), 1, 32, 35, fm);
+
+
+end</pre><TABLE><TR class="h"><th>Variable Name</th><th>Type</th><th>Sim Min</th><th>Sim Max</th></TR><TR class="a">
+<TD class="left">X_f</TD><TD class="left">numerictype(1, 32, 43) 2048 x 1 complex </TD><TD class="right">-0.00020605133875051251</TD><TD class="right">0.00019991301053323696</TD></TR>
+<TR class="b">
+<TD class="left">x</TD><TD class="left">numerictype(1, 32, 52) 1250 x 1 complex </TD><TD class="right">-3.1348485274307336e-07</TD><TD class="right">3.077612535928864e-07</TD></TR>
+<TR class="a">
+<TD class="left">x_ref</TD><TD class="left">numerictype(1, 32, 26) 2048 x 1 complex </TD><TD class="right">-24.957484513521194</TD><TD class="right">24.83440338075161</TD></TR>
+<TR class="b">
+<TD class="left">y > 1</TD><TD class="left">numerictype(1, 32, 35) 1250 x 1 complex </TD><TD class="right">-0.054162049549631774</TD><TD class="right">0.0388325821259059</TD></TR>
+<TR class="a">
+<TD class="left">y > 2</TD><TD class="left">numerictype(1, 32, 35) 2048 x 1 complex </TD><TD class="right">-0.054162049549631774</TD><TD class="right">0.0388325821259059</TD></TR>
+</TABLE>
+
+</body>
+</html>

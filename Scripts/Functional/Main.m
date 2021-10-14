@@ -71,6 +71,11 @@ for unit = 1:scenario.multi.n_re
         
     end
     
+    % Post-process tracking
+    if scenario.radarsetup.tracking_single.bi_single
+        scenario = Tracking_SingleUnit_Bidirectional(scenario);
+    end
+    
     % Reset parameters for new unit
     unitReset(scenario);
     
@@ -102,28 +107,29 @@ end
 % Fuse data between multiple estimations
 scenario.tracking_multi = DataFusion(scenario);
 
-% Perform multilateration on list of detected targets
-scenario.tracking_multi = Tracking_Multi(scenario);
+% Perform Kalman filter tracking on fused sensor data
+if scenario.radarsetup.tracking_single.bi_multi
+    scenario.tracking_multi = Tracking_Multi_Bidirectional(scenario);
+else
+    scenario.tracking_multi = Tracking_Multi(scenario, 'forward');
+end
 
 % Visualize multilateration result
 % viewMultilateration(scenario);
 
-%TEMP
-MultiPlot_Scratch
-
 %% Results Processing
 
 % Save tracking data for offline processing
-track_single = scenario.tracking_single;
-track_multi = scenario.tracking_multi;
-multi = scenario.multi;
-traj = scenario.traj;
-rs = scenario.radarsetup;
-save(['Results/Tracking Results/', scenario.simsetup.filename, '.mat'], 'track_single', 'track_multi', 'multi', 'traj', 'rs');
-track = [];
-multi = [];
-traj = [];
-rs = [];
+% track_single = scenario.tracking_single;
+% track_multi = scenario.tracking_multi;
+% multi = scenario.multi;
+% traj = scenario.traj;
+% rs = scenario.radarsetup;
+% save(['Results/Tracking Results/', scenario.simsetup.filename, '.mat'], 'track_single', 'track_multi', 'multi', 'traj', 'rs');
+% track = [];
+% multi = [];
+% traj = [];
+% rs = [];
 
 % Estimate error of results
 % scenario.results = ErrorEstimation(scenario);

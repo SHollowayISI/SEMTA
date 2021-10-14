@@ -27,7 +27,7 @@ for fr = 1:multi.n_fr
     var_sum = 0;
     
     % If limiting number of contributing receivers, make ordered list
-    if rs.tracking_single.limitSensorFusion
+    if rs.tracking_single.limitSensorFusion && (multi.n_re > 1)
         
         % Loop through receivers to estimate variance
         variance_measure = nan(multi.n_re, 1);

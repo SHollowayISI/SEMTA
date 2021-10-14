@@ -71,7 +71,7 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'ideal';
+scenario.radarsetup.initial_mode = 'static';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
