@@ -8,3 +8,6 @@
 Scratch.m
 /Results/*
 /Results/
+/PostProcessing/__pycache__
+/PostProcessing/Input
+/PostProcessing/.venv

@@ -1,0 +1,406 @@
+### Setup ###
+
+# Import statements
+import numpy as np
+import scipy.constants as constants
+import scipy.io as sio
+import pdb
+
+
+
+### Function declarations ###
+
+# Single unit Kalman filter (or both?)
+def KalmanFilter(trackSingleIn, trackParams, frame, passDirection):
+
+    # Unpack measurement values
+    meas = dict()
+    for key in trackSingleIn['meas'].keys():
+        meas[key] = trackSingleIn['meas'][key][frame]
+    
+    # Determine previous successful measurement
+    if passDirection == 'forward':
+        if frame > 0:
+            hit_ind = np.argwhere(trackSingleIn['hit_list'][:(frame-1)])
+            hit_ind = hit_ind[np.where((frame - hit_ind) <= (trackParams['miss_max']+1))]
+        else:
+            hit_ind = np.matrix([])
+    elif passDirection == 'reverse':
+        if frame < 49:
+            hit_ind = len(trackSingleIn['hit_list']) - np.argwhere(trackSingleIn['hit_list'][(frame+1):]) - 1
+            hit_ind = hit_ind[np.where((hit_ind - frame) <= (trackParams['miss_max']+1))]
+        else:
+            hit_ind = np.matrix([])
+
+    # Check if track needs to be initialized
+    if hit_ind.size == 0:
+
+        # Use measurement as state prediction
+        X_init = np.matrix([[
+            meas['range'] * np.cos(meas['az'] * np.pi / 180),
+            meas['vel'] * np.cos(meas['az'] * np.pi / 180),
+            0,
+            meas['range'] * np.sin(meas['az'] * np.pi / 180),
+            meas['vel'] * np.sin(meas['az'] * np.pi / 180),
+            0
+        ]]).T
+
+        # Use measurement uncertainties as covariance prediction
+        P_init = GenerateStateCovariance(meas, trackParams)
+
+        # Save results
+        return SaveStepData(trackSingleIn, frame, X_init, P_init, X_init, P_init)
+
+    else:
+
+        # Calculate time step since previous hit
+        lastHitFrame = hit_ind[-1]
+        Tm = trackParams['frame_time'] * (frame - lastHitFrame)
+
+
+    ## Calculate Model Matrices
+
+    # Measurement covariance matrix
+    if not meas:
+        R_full = np.diag(GenerateStateCovariance(meas, trackParams))
+    else:
+        meas_temp = dict()
+        for key in trackSingleIn['meas'].keys():
+            meas_temp[key] = trackSingleIn['meas'][key][lastHitFrame]
+        R_full = np.diag(GenerateStateCovariance(meas_temp, trackParams))
+
+    R = np.diag([R_full[i] for i in [1, 4]])
+
+    # Process covariance matrix (NCA model)
+    Q_1d = np.array([[(Tm**4)/4, (Tm**3)/2, (Tm**2)/2],
+                     [(Tm**3)/2, (Tm**2),   (Tm)],
+                     [(Tm**2)/2, (Tm),      1]])
+    Q = np.asmatrix(np.concatenate((
+                np.concatenate((Q_1d*(trackParams['sigma_v'][0]**2), np.zeros(Q_1d.shape)), axis=1), 
+                np.concatenate((np.zeros(Q_1d.shape), Q_1d*(trackParams['sigma_v'][1]**2)), axis=1)), 
+                axis=0))
+
+    # Kinematic process matrix (NCA model)
+    F_1d = np.array([[1,    (Tm),   (Tm**2)/2],
+                     [0,    1,      (Tm)],
+                     [0,    0,      1]])
+    F = np.asmatrix(np.concatenate((
+                np.concatenate((F_1d, np.zeros(F_1d.shape)), axis=1), 
+                np.concatenate((np.zeros(F_1d.shape), F_1d), axis=1)), 
+                axis=0))
+
+
+    ## Prediction step
+
+    # Predict kinematic vector
+    X_pre = F * np.asmatrix(trackSingleIn['estimate'][lastHitFrame]['state'])
+
+    # Predicted kinematic covariance
+    P_pre = (F * (np.asmatrix(trackSingleIn['estimate'][lastHitFrame]['covar'])* F.T)) + Q
+
+    # Save prediction as estimate if measurement not taken
+    if not trackSingleIn['hit_list'][frame]:
+        return SaveStepData(trackSingleIn, frame, X_pre, P_pre, X_pre, P_pre)
+
+    ## Calculate measurement matrices
+
+    # Measurement vector
+    Z = np.matrix([
+            meas['range'] * np.cos(meas['az'] * np.pi / 180),
+            meas['range'] * np.sin(meas['az'] * np.pi / 180)])
+
+    # Measurement matrix
+    H = np.matrix([[1, 0, 0, 0, 0, 0],
+                  [0, 0, 0, 1, 0, 0]])
+
+    # Measurement residual
+    Z_res = Z.T - (H * X_pre)
+
+
+    ## Estimation Step
+
+    # Measurement residual covariance
+    S = H * (P_pre * H.T) + R
+
+    # Kalman matrix
+    K = (P_pre * H.T) * S.I
+
+    # Estimated kinematic vector
+    X_est = X_pre + (K * Z_res)
+
+    # Estimated kinematic covariance
+    P_est = P_pre - (K * (H * P_pre))
+
+    # Save data
+    return SaveStepData(trackSingleIn, frame, X_est, P_est, X_pre, P_pre)
+
+# Save data for each Kalman filter step
+def SaveStepData(trackSingleIn, frame, X_est, P_est, X_pre, P_pre):
+
+    # Save estimates
+    trackSingleIn['estimate'][frame] = dict(
+        state   = X_est,
+        covar   = P_est,
+        cart    = [X_est[i] for i in [1, 4]],
+        az      = np.arctan(X_est[4] / X_est[1]) * 180 / np.pi,
+        range   = np.linalg.norm([X_est[i] for i in [1, 4]]),
+        speed   = np.linalg.norm([X_est[i] for i in [2, 5]])
+    )
+
+    # Save predictions
+    trackSingleIn['prediction'][frame] = dict(
+        state   = X_pre,
+        covar   = P_pre,
+        cart    = [X_pre[i] for i in [1, 4]],
+        az      = np.arctan(X_pre[4] / X_pre[1]) * 180 / np.pi,
+        range   = np.linalg.norm([X_pre[i] for i in [1, 4]]),
+        speed   = np.linalg.norm([X_pre[i] for i in [2, 5]])
+    )
+
+    # Return data structure
+    return trackSingleIn
+
+# Calculate state uncertainty matrix
+def GenerateStateCovariance(meas, trackParams):
+
+    # Calculate measurement variances
+    sig_R, sig_A, sig_V = CalculateVariance(meas)
+
+    # Convert to radians
+    sig_A = sig_A * np.pi / 180
+
+    # Calculate speed variance (assuming symmetric uniform distribution)
+    speed_unc = 0.57735 * trackParams['max_vel']
+    accel_unc = 0.47735 * trackParams['max_acc']
+
+    # Calculate uncertainty matrix
+    az_rad = meas['az'] * np.pi / 180
+    P = np.diag([
+        (sig_R * np.cos(az_rad))**2 
+            + (sig_A * meas['range'] * np.sin(az_rad))**2,
+        (sig_V * np.cos(az_rad))**2 
+            + (speed_unc * meas['range'] * np.sin(az_rad))**2
+            + (sig_A * meas['vel'] * np.sin(az_rad))**2,
+        accel_unc,
+        (sig_R * np.sin(az_rad))**2 
+            + (sig_A * meas['range'] * np.cos(az_rad))**2,
+        (sig_V * np.sin(az_rad))**2 
+            + (speed_unc * meas['range'] * np.cos(az_rad))**2
+            + (sig_A * meas['vel'] * np.cos(az_rad))**2,
+        accel_unc
+    ])
+    return P
+
+# Calculate measurement variance from empirical curves
+def CalculateVariance(meas):
+
+    # Unpack variables
+    steer = meas['steer']
+    range = meas['range']
+    theta = meas['az']
+    SNR = meas['SNR']
+    C = constants.speed_of_light
+    
+
+    ## Calculate range variance
+
+    # Calculate fading factor due to incomplete pulse return
+    fade = np.min([1,
+        2 * range / (C * 10e-6),
+        (5e-5 - (2 * range / C)) / 10e-6
+    ])
+
+    # Calculate variance accounting only for SNR
+    sig_R = 7.8927 * np.power(10, -SNR / 20)
+
+    # Incorporate fading resolution loss
+    sig_R /= fade**2
+
+
+    ## Calculate angle variance
+
+    # Calculate variance accounting only for SNR
+    sig_A = (6.335 / 1.4817) / np.sqrt(2 * np.power(10, -SNR / 10))
+
+    # Adjust variance for beam steering loss
+    sig_A /= np.cos(steer * np.pi / 180)**2
+
+    # Adjust vaiance for offest from beam center
+    offset = np.abs(theta - steer)
+    sig_A *= np.sqrt(1 + (1.4817 * offset / 6.335)**2)
+
+
+    ## Calculate velocity variance
+
+    # Variance due only to SNR
+    sig_V = np.power(10, -1.2517 - 0.0044602 * SNR)
+
+    # Return tuple of results
+    return (sig_R, sig_A, sig_V)
+
+# Single unit, single pass processing
+def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
+    
+    # Set up output data structure
+    trackOut = dict(
+        isActive    = False,
+        misses      = 0,
+        hit_list    = [bool(el) for el in trackSingleIn['hit_list'].tolist()],
+        meas        = trackSingleIn['meas'],
+        estimate    = [None]*numFr,
+        prediction  = [None]*numFr
+    )
+
+    # Generate frame list
+    if passDirection == 'forward':
+        frList = range(0,numFr,1)
+    elif passDirection == 'reverse':
+        frList = range(numFr-1,-1,-1)
+
+    # Loop through frames
+    for fr in frList:
+
+        # Check for detection
+        if trackOut['hit_list'][fr]:
+
+            # Set flags
+            trackOut['isActive'] = True
+            trackOut['misses'] = 0
+
+        else:
+
+            # Set flags
+            trackOut['misses'] += 1
+            trackOut['isActive'] &= (trackOut['misses'] < trackParams['miss_max'])
+        
+        # Perform track filtering
+        if trackOut['isActive']:
+            trackOut = KalmanFilter(trackOut, trackParams, fr, passDirection)
+
+
+    # Return data object
+    return trackOut
+
+# Single unit, both pass processing
+def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
+
+    # Set up output data structure
+    trackEstimate = [None]*numFr
+
+    # Run forward and backward passes
+    trackReverse = TrackingSingleUnit(trackSingleIn, trackParams, 'reverse')
+    trackForward = TrackingSingleUnit(trackSingleIn, trackParams, 'forward')
+    hit_list = [f | r for f, r in zip(trackForward['hit_list'], trackReverse['hit_list'])]
+
+    # Fuse data for each frame
+    for fr in range(numFr):
+
+        if hit_list[fr] and trackForward['estimate'][fr] is not None:
+
+            # Unpack structures
+            estF = trackForward['estimate'][fr]
+            estR = trackReverse['estimate'][fr]
+
+            # Perform inverse variance weighting
+            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) 
+            + (1 / np.diagonal(estR['covar']))).T
+            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) 
+            + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
+
+            varNew = np.diag((1 / varSum.T).tolist()[0])
+            stateNew = stateSum / varSum
+
+            # Save data back to struct
+            trackEstimate[fr] = dict(
+                state = stateNew,
+                covar = varNew,
+                cart = [stateNew[i] for i in [1, 4]],
+                az = np.arctan(stateNew[4] / stateNew[1]) * 180 / np.pi,
+                range = np.linalg.norm([stateNew[i] for i in [1, 4]]),
+                speed = np.linalg.norm([stateNew[i] for i in [2, 5]])
+            )
+            
+    # Return data structure
+    return trackEstimate
+
+# Multi unit data fusion
+def DataFusion(trackMultiIn, trackParams, radarPos):
+
+    # DUMMY OUTPUT
+    return None
+
+
+### Main ###
+
+# Set tracking parameters
+trackParams = dict(
+    max_vel = 250,
+    max_acc = 1,
+    dist_thresh = 13.8,
+    miss_max = 5,
+    sigma_v = (0.09, 0),
+    bi_multi = True,
+    bi_single = True,
+    limitSensorFusion = True,
+    frame_time = 0.0512
+)
+
+# Set other parameters
+filename = 'TrackingTestInitial_101821_1253.mat'
+
+### Read input data ###
+
+# Unpack .mat file
+mat = sio.loadmat('Input/' + filename)
+matKeys = {'hit_list', 'range', 'vel', 'SNR', 'az', 'steer'}
+trackData = dict()
+
+# Set up new data structure
+for key in matKeys:
+    trackData[key] = mat['track_out'][0][0][key]
+radarPos = mat['track_out'][0][0]['radar_pos']
+
+# Determine global parameters
+numRx = trackData['hit_list'].shape[0]
+numFr = trackData['hit_list'].shape[1]
+
+
+### Single unit tracking ###
+
+# Set up data structure
+trackSingle = [None]*numRx
+
+# Loop through receivers
+for rx in range(numRx):
+
+    # Set up data structures
+    meas = dict()
+    for key in matKeys:
+        if key != 'hit_list':
+            meas[key] = trackData[key][rx]
+
+    trackSingle[rx] = dict(
+        hit_list = trackData['hit_list'][rx],
+        meas = meas,
+        estimate = [])
+    
+    # Pass to function
+    trackSingle[rx]['estimate'] = TrackingSingleUnitBidirectional(trackSingle[rx], trackParams)
+
+
+
+### Data fusion ###
+
+# Set up data structure
+trackingMulti = dict(
+    numDetect   = np.zeros(numFr),
+    state       = [None]*numFr,
+    var         = [None]*numFr,
+    hit_list    = [False]*numFr
+)
+
+
+
+### Multistatic tracking ###
+
+    # Kalman filter
