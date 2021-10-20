@@ -4,6 +4,7 @@ classdef RadarScenario < handle
     properties
         multi
         tracking_single
+        tracking_single_raw
         tracking_multi
         rcs
         traj

@@ -47,7 +47,7 @@ for fr = 1:scenario.multi.n_fr
 end
 
 %% Pack variables
-
+scenario.tracking_single_raw{unit} = scenario.tracking_single{unit};
 scenario.tracking_single{unit} = track;
 
 end

@@ -29,6 +29,7 @@ scenario.simsetup = struct( ...
     'save_format',  save_format, ...            % File types to save figures
     'save_figs',    false, ...                  % Save figures T/F
     'save_mat',     false, ...                  % Save mat file T/F
-    'reduce_mat',   false);                     % Reduce mat file for saving
+    'reduce_mat',   false, ...                  % Reduce mat file for saving
+    'save_track',   false);                      % Save tracking T/F
 
 

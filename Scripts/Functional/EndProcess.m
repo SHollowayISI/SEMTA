@@ -36,6 +36,11 @@ if scenario.simsetup.save_figs
 end
 
 
+% Save tracking data in Python-compatible format
+if scenario.simsetup.save_track
+    SaveTracking(scenario);
+end
+
 %% Send Email Alert
 
 % Send email alert with attachment if chosen

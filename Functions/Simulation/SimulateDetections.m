@@ -69,6 +69,7 @@ detection.detect_list = struct( ...
 %% Pack Variables
 
 scenario.detection = detection;
+scenario.multi.steering_angle(flags.frame, flags.unit) = meas.steer;
 
 end
 

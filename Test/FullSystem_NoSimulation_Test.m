@@ -35,10 +35,10 @@ StartProcess;
 
 % spacing_list = 1000*(1:10);
 % dist_list = 1000*(1:7);
-spacing_list = 1000*(1:10);
-dist_list = 1000*(1:6);
-% spacing_list = 3000;
-% dist_list = 3000;
+% spacing_list = 1000*(1:10);
+% dist_list = 1000*(1:6);
+spacing_list = 7000;
+dist_list = 5000;
 
 num_iter = 25;
 num_frames = 500;
@@ -127,7 +127,7 @@ end
 
 MultiPlot_Scratch2
 
-save('Varied.mat', 'traj_out', 'est_out', 'single_out', 'error_out', 'mean_out', 'std_out', 'rms_out', 'max_out', 'num_miss', 'num_fail', 'spacing_list', 'dist_list');
+% save('Varied.mat', 'traj_out', 'est_out', 'single_out', 'error_out', 'mean_out', 'std_out', 'rms_out', 'max_out', 'num_miss', 'num_fail', 'spacing_list', 'dist_list');
 
 %% Save Figures and Data
 
