@@ -6,6 +6,9 @@ import numpy as np
 import scipy.constants as constants
 import scipy.io as sio
 import csv
+import matplotlib.pyplot as plt
+
+import pdb
 
 
 
@@ -25,13 +28,13 @@ def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
     # Determine previous successful measurement
     if passDirection == 'forward':
         if frame > 0:
-            hit_ind = np.argwhere(trackSingleIn['hit_list'][:(frame-1)])
+            hit_ind = np.argwhere(trackSingleIn['hit_list'][:frame])
             hit_ind = hit_ind[np.where((frame - hit_ind) <= (trackParams['miss_max']+1))]
         else:
             hit_ind = np.matrix([])
     elif passDirection == 'reverse':
         if frame < numFr-1:
-            hit_ind = len(trackSingleIn['hit_list']) - np.argwhere(trackSingleIn['hit_list'][(frame+1):]) - 1
+            hit_ind = np.flip(frame + np.argwhere(trackSingleIn['hit_list'][(frame+1):]) + 1)
             hit_ind = hit_ind[np.where((hit_ind - frame) <= (trackParams['miss_max']+1))]
         else:
             hit_ind = np.matrix([])
@@ -65,7 +68,7 @@ def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
     ## Calculate Model Matrices
 
     # Measurement covariance matrix
-    if not meas:
+    if meas:
         R_full = np.diag(GenerateStateCovariance(meas, trackParams))
     else:
         meas_temp = dict()
@@ -145,8 +148,8 @@ def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre):
     trackIn['estimate'][frame] = dict(
         state   = X_est,
         covar   = P_est,
-        cart    = [X_est[i] for i in [1, 4]],
-        az      = np.arctan(X_est[4] / X_est[1]) * 180 / np.pi,
+        cart    = [X_est[i] for i in [0, 3]],
+        az      = np.arctan(X_est[3] / X_est[0]) * 180 / np.pi,
         range   = np.linalg.norm([X_est[i] for i in [0, 3]]),
         speed   = np.linalg.norm([X_est[i] for i in [1, 4]])
     )
@@ -155,8 +158,8 @@ def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre):
     trackIn['prediction'][frame] = dict(
         state   = X_pre,
         covar   = P_pre,
-        cart    = [X_pre[i] for i in [1, 4]],
-        az      = np.arctan(X_pre[4] / X_pre[1]) * 180 / np.pi,
+        cart    = [X_pre[i] for i in [0, 3]],
+        az      = np.arctan(X_pre[3] / X_pre[0]) * 180 / np.pi,
         range   = np.linalg.norm([X_pre[i] for i in [0, 3]]),
         speed   = np.linalg.norm([X_pre[i] for i in [1, 4]])
     )
@@ -175,7 +178,7 @@ def GenerateStateCovariance(meas, trackParams):
 
     # Calculate speed variance (assuming symmetric uniform distribution)
     speed_unc = 0.57735 * trackParams['max_vel']
-    accel_unc = 0.47735 * trackParams['max_acc']
+    accel_unc = 0.57735 * trackParams['max_acc']
 
     # Calculate uncertainty matrix
     az_rad = meas['az'] * np.pi / 180
@@ -224,7 +227,7 @@ def CalculateVariance(meas):
     ## Calculate angle variance
 
     # Calculate variance accounting only for SNR
-    sig_A = (6.335 / 1.4817) / np.sqrt(2 * np.power(10, -SNR / 10))
+    sig_A = (6.335 / 1.4817) / np.sqrt(2 * np.power(10, SNR / 10))
 
     # Adjust variance for beam steering loss
     sig_A /= np.cos(steer * np.pi / 180)**2
@@ -284,7 +287,6 @@ def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
         if trackOut['isActive']:
             trackOut = KalmanFilterSingle(trackOut, trackParams, fr, passDirection)
 
-
     # Return data object
     return trackOut
 
@@ -298,8 +300,8 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
     trackEstimate = [None]*numFr
 
     # Run forward and backward passes
-    trackReverse = TrackingSingleUnit(trackSingleIn, trackParams, 'reverse')
     trackForward = TrackingSingleUnit(trackSingleIn, trackParams, 'forward')
+    trackReverse = TrackingSingleUnit(trackSingleIn, trackParams, 'reverse')
     hit_list = [f | r for f, r in zip(trackForward['hit_list'], trackReverse['hit_list'])]
 
     # Fuse data for each frame
@@ -312,10 +314,8 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
             estR = trackReverse['estimate'][fr]
 
             # Perform inverse variance weighting
-            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) 
-            + (1 / np.diagonal(estR['covar']))).T
-            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) 
-            + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
+            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
+            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
 
             varNew = np.diag((1 / varSum.T).tolist()[0])
             stateNew = stateSum / varSum
@@ -325,7 +325,7 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
                 state = stateNew,
                 covar = varNew,
                 cart = [stateNew[i] for i in [0, 3]],
-                az = np.arctan(stateNew[4] / stateNew[1]) * 180 / np.pi,
+                az = np.arctan(stateNew[3] / stateNew[0]) * 180 / np.pi,
                 range = np.linalg.norm([stateNew[i] for i in [0, 3]]),
                 speed = np.linalg.norm([stateNew[i] for i in [1, 4]])
             )
@@ -343,6 +343,8 @@ def DataFusion(trackSingleIn, trackParams, radarPos):
     # Set up data structure
     trackingMulti = dict(
         estimate         = [None]*numFr,
+        forward          = [None]*numFr,
+        reverse          = [None]*numFr,
         prediction       = [None]*numFr,
         meas_estimate    = [None]*numFr,
         meas_prediction  = [None]*numFr,
@@ -383,7 +385,7 @@ def DataFusion(trackSingleIn, trackParams, radarPos):
             rxList = range(numRx)
 
         # Loop through receivers
-        for rx in rxList:
+        for rx in range(numRx):
 
             # Only add if receiver detected target
             if trackSingleIn[rx]['hit_list'][fr]:
@@ -397,10 +399,12 @@ def DataFusion(trackSingleIn, trackParams, radarPos):
                 state[0] += radarPos[0][rx]
                 state[3] += radarPos[1][rx]
 
-                # Update running sums
-                numDetect += 1
-                stateSum += state / np.asmatrix(var).T
-                varSum += 1 / var
+                if rx in rxList:
+
+                    # Update running sums
+                    numDetect += 1
+                    stateSum += state / np.asmatrix(var).T
+                    varSum += 1 / var
 
         # If some data is collected
         if numDetect > 0:
@@ -425,20 +429,27 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
         frList = range(0,numFr,1)
     elif passDirection == 'reverse':
         frList = range(numFr-1,-1,-1)
+        
+    # Set up field
+    trackMultiIn[passDirection] = dict(
+        estimate     = [None]*numFr,
+        prediction   = [None]*numFr,
+        hit_list     = [True]*numFr)
+
 
     # Loop through frames
     for fr in frList:
-
+        
         # Determine previous successful measurement
         if passDirection == 'forward':
             if fr > 0:
-                hit_ind = np.argwhere(trackMultiIn['hit_list'][:(fr-1)])
+                hit_ind = np.argwhere(trackMultiIn['hit_list'][:fr])
                 hit_ind = hit_ind[np.where((fr - hit_ind) <= (trackParams['miss_max']+1))]
             else:
                 hit_ind = np.matrix([])
         elif passDirection == 'reverse':
             if fr < numFr-1:
-                hit_ind = len(trackMultiIn['hit_list']) - np.argwhere(trackMultiIn['hit_list'][(fr+1):]) - 1
+                hit_ind = np.flip(fr + np.argwhere(trackMultiIn['hit_list'][(fr+1):]) + 1)
                 hit_ind = hit_ind[np.where((hit_ind - fr) <= (trackParams['miss_max']+1))]
             else:
                 hit_ind = np.matrix([])
@@ -454,13 +465,13 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
                 P_init = trackMultiIn['meas_estimate'][fr]['covar']
 
                 # Save results
-                trackMultiIn = SaveStepData(trackMultiIn, fr, X_init, P_init, X_init, P_init)
+                trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_init, P_init, X_init, P_init)
                 continue
 
             else:
 
                 # Set output hit list
-                trackMultiIn['hit_list_out'][fr] = False
+                trackMultiIn[passDirection]['hit_list'][fr] = False
 
         else:
 
@@ -496,14 +507,14 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             ## Prediction step
 
             # Predict kinematic vector
-            X_pre = F * np.asmatrix(trackMultiIn['meas_estimate'][lastHitFrame]['state'])
+            X_pre = F * np.asmatrix(trackMultiIn[passDirection]['estimate'][lastHitFrame]['state'])
 
             # Predicted kinematic covariance
-            P_pre = (F * (np.asmatrix(trackMultiIn['meas_estimate'][lastHitFrame]['covar'])* F.T)) + Q
+            P_pre = (F * (np.asmatrix(trackMultiIn[passDirection]['estimate'][lastHitFrame]['covar'])* F.T)) + Q
 
             # Save prediction as estimate if measurement not taken
-            if not trackMultiIn['hit_list'][fr]:
-                trackMultiIn = SaveStepData(trackMultiIn, fr, X_pre, P_pre, X_pre, P_pre)
+            if not trackMultiIn[passDirection]['hit_list'][fr]:
+                trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_pre, P_pre, X_pre, P_pre)
                 continue
 
             ## Calculate measurement matrices
@@ -532,8 +543,12 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             # Estimated kinematic covariance
             P_est = P_pre - (K * (H * P_pre))
 
+            # pdb.set_trace()
+
             # Save data
-            trackMultiIn = SaveStepData(trackMultiIn, fr, X_est, P_est, X_pre, P_pre)
+            trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_est, P_est, X_pre, P_pre)
+
+            # pdb.set_trace()
 
     return trackMultiIn
 
@@ -544,24 +559,22 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
     numFr = trackParams['numFr']
 
     # Run forward and backwards pass of tracking
-    trackForward = TrackingMulti(trackMultiIn, trackParams, 'forward')
-    trackReverse = TrackingMulti(trackMultiIn, trackParams, 'reverse')
-    hit_list = [f & r for f, r in zip(trackForward['hit_list_out'], trackReverse['hit_list_out'])]
+    trackMultiIn = TrackingMulti(trackMultiIn, trackParams, 'forward')
+    trackMultiIn = TrackingMulti(trackMultiIn, trackParams, 'reverse')
+    hit_list = [f & r for f, r in zip(trackMultiIn['forward']['hit_list'], trackMultiIn['reverse']['hit_list'])]
 
     # Loop through frames
     for fr in range(numFr):
 
         # Unpack structures
-        estF = trackForward['estimate'][fr]
-        estR = trackReverse['estimate'][fr]
+        estF = trackMultiIn['forward']['estimate'][fr]
+        estR = trackMultiIn['reverse']['estimate'][fr]
 
         if hit_list[fr]:
 
             # Perform inverse variance weighting
-            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) 
-            + (1 / np.diagonal(estR['covar']))).T
-            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) 
-            + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
+            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
+            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
 
             varNew = np.diag((1 / varSum.T).tolist()[0])
             stateNew = stateSum / varSum
@@ -573,7 +586,7 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
                 pos   = [stateNew[i] for i in [0, 3]],
                 vel   = [stateNew[i] for i in [1, 4]])
 
-        elif trackForward['hit_list_out'][fr]:
+        elif trackMultiIn['forward']['hit_list'][fr]:
 
             # Save only forward results
             trackMultiIn['estimate'][fr] = dict(
@@ -582,7 +595,7 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
                 pos   = [estF['state'][i] for i in [0, 3]],
                 vel   = [estF['state'][i] for i in [1, 4]])
 
-        elif trackReverse['hit_list_out'][fr]:
+        elif trackMultiIn['reverse']['hit_list'][fr]:
 
             # Save only forward results
             trackMultiIn['estimate'][fr] = dict(
@@ -591,9 +604,8 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
                 pos   = [estR['state'][i] for i in [0, 3]],
                 vel   = [estR['state'][i] for i in [1, 4]])
 
-
     # Generate new detection list
-    trackMultiIn['bi_hit_list'] = [f | r for f, r in zip(trackForward['hit_list'], trackReverse['hit_list'])]
+    trackMultiIn['bi_hit_list'] = [f | r for f, r in zip(trackMultiIn['forward']['hit_list'], trackMultiIn['reverse']['hit_list'])]
     return trackMultiIn
 
 
@@ -657,6 +669,7 @@ def ProcessFile(filename):
         trackSingle[rx]['estimate'] = TrackingSingleUnitBidirectional(trackSingle[rx], trackParams)
 
 
+
     ### Multistatic processing ###
 
     # Run data fusion
@@ -687,21 +700,35 @@ def ProcessFile(filename):
     for fr in range(numFr):
         positionEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(el) for el in trackingMulti['estimate'][fr]['pos']]
 
+
     # Save multistatic results
     with open(saveFolder + '/multi.csv', mode='w', newline='') as csv_out:
         csvWriter = csv.writer(csv_out, delimiter=',', quotechar='"')
         csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
         csvWriter.writerows(positionEstimate)
 
+    # Plot multistatic results
+    data = np.array(positionEstimate)
+    xs = data[:,3]
+    ys = data[:,2]
+    xlims = (np.min(xs), np.max(xs))
+    ylims = (np.min(ys), np.max(ys))
+    plt.scatter(xs, ys)
+    plt.grid()
+    plt.xlim(xlims)
+    plt.ylim(ylims)
+    plt.savefig(saveFolder + '/multi.png')
+    plt.close()
+
     # Save single unit results
     for rx in range(numRx):
-        with open(saveFolder + '/single' + str(rx) + '.csv', mode='w', newline='') as csv_out:
+        with open(saveFolder + '/single' + str(rx+1) + '.csv', mode='w', newline='') as csv_out:
             
             singleEstimate = [None]*numFr
             for fr in range(numFr):
                 
                 if trackSingle[rx]['hit_list'][fr]:
-                    singleEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(el) for el in trackSingle[rx]['estimate'][fr]['cart']]
+                    singleEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(trackSingle[rx]['estimate'][fr]['cart'][0])] + [float(trackSingle[rx]['estimate'][fr]['cart'][1])]
                     if np.isnan(singleEstimate[fr][-1]):
                         singleEstimate[fr] = [fr+1, trackParams['frame_time']*(fr+0.5), '', '']
                 
@@ -712,6 +739,23 @@ def ProcessFile(filename):
             csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
             csvWriter.writerows(singleEstimate)
 
+            # Convert nan types for plotting
+            for frame in singleEstimate:
+                if frame[-1] == '':
+                    frame[-1] = np.nan
+                    frame[-2] = np.nan
+
+            # Plot single unit results
+            data = np.array(singleEstimate)
+            xs = data[:,3]
+            ys = data[:,2]
+            plt.scatter(xs, ys)
+            plt.grid()
+            plt.xlim(xlims)
+            plt.ylim(ylims)
+            plt.savefig(saveFolder + '/single' + str(rx+1) + '.png')
+            plt.close()
+
 
 
 ### Process set file if run from main ###
@@ -719,4 +763,4 @@ def ProcessFile(filename):
 
 if __name__ == '__main__':
     inputFolder = os.path.dirname(os.path.realpath(__file__)) + '/Input/'
-    ProcessFile(inputFolder + 'TrackingTestInitial_101921_1559.mat')
+    ProcessFile(inputFolder + 'TrackingTestInitial_102521_1242.mat')

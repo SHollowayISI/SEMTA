@@ -17,7 +17,7 @@
 scenario.rcs = struct( ...
     ...
     ... % RCS options
-    'rcs_model',    'constant', ...        % Set 'model' or 'constant'
+    'rcs_model',    'model', ...        % Set 'model' or 'constant'
     'ave_rcs',      -20, ...            % Target RCS in dBm^2
     ...
     ... % Model options
@@ -27,7 +27,7 @@ scenario.rcs = struct( ...
     'freq',         9e9:10e6:10e9, ...  % Frequency range to model
     ...
     ... % Broadside specular options
-    'specular_on',  false, ...           % T/F Model broadside specular
+    'specular_on',  true, ...           % T/F Model broadside specular
     'theta_zero',   2, ...              % Angle at which spec. response is 1m^2
     'theta_ave',    30, ...             % Angle at which spec. meets statistical level
     'peak_rcs',     10);                % RCS at broadside specular peak

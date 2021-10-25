@@ -19,7 +19,7 @@ nm = 1852;
 %% Multistatic Scenario Setup
 
 % Locations of radar units
-num_receivers = 5;
+num_receivers = 20;
 % radar_pos = ...
 %     [-0.5 * nm * ones(1,num_receivers); ...    % Constant x location
 %      0.25 * nm * ((0:(num_receivers-1))); ...  % Incremental y distance
@@ -29,7 +29,7 @@ num_receivers = 5;
 
 dist_from_center = 3000;
 unit_spacing = 1024;
-spacing_offset = 1024;
+spacing_offset = -1024;
 % dist_from_center = 0.5 * nm;
 % unit_spacing = 0.25 * nm;
 
@@ -42,7 +42,7 @@ radar_pos = ...
 % Multistatic properties
 scenario.multi = struct( ...
     ...
-    'n_fr',         50, ...                  % Number of frames for simulation
+    'n_fr',         100, ...                  % Number of frames for simulation
     'n_re',         size(radar_pos,2), ...  % Number of radar units to simulate
     'radar_pos',    radar_pos);
 
