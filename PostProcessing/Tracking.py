@@ -12,6 +12,9 @@ import pdb
 # Single unit Kalman filter
 def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
 
+    # Unpack variables
+    numFr = trackParams['numFr']
+
     # Unpack measurement values
     meas = dict()
     for key in trackSingleIn['meas'].keys():
@@ -240,6 +243,9 @@ def CalculateVariance(meas):
 # Single unit, single pass processing
 def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
     
+    # Unpack variables
+    numFr = trackParams['numFr']
+
     # Set up output data structure
     trackOut = dict(
         isActive    = False,
@@ -283,6 +289,9 @@ def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
 # Single unit, both pass processing
 def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
 
+    # Unpack variables
+    numFr = trackParams['numFr']
+
     # Set up output data structure
     trackEstimate = [None]*numFr
 
@@ -324,6 +333,10 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
 
 # Multi unit data fusion
 def DataFusion(trackSingleIn, trackParams, radarPos):
+
+    # Unpack variables
+    numFr = trackParams['numFr']
+    numRx = trackParams['numRx']
 
     # Set up data structure
     trackingMulti = dict(
@@ -401,6 +414,9 @@ def DataFusion(trackSingleIn, trackParams, radarPos):
 
 # Multi unit, single pass processing
 def TrackingMulti(trackMultiIn, trackParams, passDirection):
+
+    # Unpack variables
+    numFr = trackParams['numFr']
 
     # Generate frame list
     if passDirection == 'forward':
@@ -522,6 +538,9 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
 # Multi unit, both pass processing
 def TrackingMultiBidirectional(trackMultiIn, trackParams):
 
+    # Unpack variables
+    numFr = trackParams['numFr']
+
     # Run forward and backwards pass of tracking
     trackForward = TrackingMulti(trackMultiIn, trackParams, 'forward')
     trackReverse = TrackingMulti(trackMultiIn, trackParams, 'reverse')
@@ -579,69 +598,74 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
 
 ### Main ###
 
-# Set tracking parameters
-trackParams = dict(
-    max_vel = 250,
-    max_acc = 1,
-    dist_thresh = 13.8,
-    miss_max = 5,
-    sigma_v = (0.09, 0),
-    bi_multi = True,
-    bi_single = True,
-    limitSensorFusion = True,
-    frame_time = 0.0512
-)
+def ProcessFile(filename):
+        
+    # Set tracking parameters
+    trackParams = dict(
+        max_vel = 250,
+        max_acc = 1,
+        dist_thresh = 13.8,
+        miss_max = 5,
+        sigma_v = (0.09, 0),
+        bi_multi = True,
+        bi_single = True,
+        limitSensorFusion = True,
+        frame_time = 0.0512,
+        numFR = None,
+        numRx = None
+    )
 
-# Set other parameters
-filename = 'TrackingTestInitial_101921_1559.mat'
+    ### Read input data ###
 
-### Read input data ###
+    # Unpack .mat file
+    mat = sio.loadmat(filename)
+    matKeys = {'hit_list', 'range', 'vel', 'SNR', 'az', 'steer'}
+    trackData = dict()
 
-# Unpack .mat file
-mat = sio.loadmat('Input/' + filename)
-matKeys = {'hit_list', 'range', 'vel', 'SNR', 'az', 'steer'}
-trackData = dict()
-
-# Set up new data structure
-for key in matKeys:
-    trackData[key] = mat['track_out'][0][0][key]
-radarPos = mat['track_out'][0][0]['radar_pos']
-
-# Determine global parameters
-numRx = trackData['hit_list'].shape[0]
-numFr = trackData['hit_list'].shape[1]
-
-
-### Single unit tracking ###
-
-# Set up data structure
-trackSingle = [None]*numRx
-
-# Loop through receivers
-for rx in range(numRx):
-
-    # Set up data structures
-    meas = dict()
+    # Set up new data structure
     for key in matKeys:
-        if key != 'hit_list':
-            meas[key] = trackData[key][rx]
+        trackData[key] = mat['track_out'][0][0][key]
+    radarPos = mat['track_out'][0][0]['radar_pos']
 
-    trackSingle[rx] = dict(
-        hit_list = trackData['hit_list'][rx],
-        meas = meas,
-        estimate = [])
-    
-    # Pass to function
-    trackSingle[rx]['estimate'] = TrackingSingleUnitBidirectional(trackSingle[rx], trackParams)
+    # Determine global parameters
+    trackParams['numRx'] = numRx = trackData['hit_list'].shape[0]
+    trackParams['numFr'] = numFr = trackData['hit_list'].shape[1]
 
 
-### Multistatic processing ###
+    ### Single unit tracking ###
 
-# Run data fusion
-trackingMulti = DataFusion(trackSingle, trackParams, radarPos)
+    # Set up data structure
+    trackSingle = [None]*numRx
 
-# Multistatic tracking
-trackingMulti = TrackingMultiBidirectional(trackingMulti, trackParams)
+    # Loop through receivers
+    for rx in range(numRx):
+
+        # Set up data structures
+        meas = dict()
+        for key in matKeys:
+            if key != 'hit_list':
+                meas[key] = trackData[key][rx]
+
+        trackSingle[rx] = dict(
+            hit_list = trackData['hit_list'][rx],
+            meas = meas,
+            estimate = [])
+        
+        # Pass to function
+        trackSingle[rx]['estimate'] = TrackingSingleUnitBidirectional(trackSingle[rx], trackParams)
 
 
-### Saving data & plotting ###
+    ### Multistatic processing ###
+
+    # Run data fusion
+    trackingMulti = DataFusion(trackSingle, trackParams, radarPos)
+
+    # Multistatic tracking
+    trackingMulti = TrackingMultiBidirectional(trackingMulti, trackParams)
+
+
+
+### Process set file if run from main ###
+
+if __name__ == '__main__':
+    ProcessFile('TrackingTestInitial_101921_1559.mat')
