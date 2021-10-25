@@ -1,14 +1,14 @@
 ### Settings ###
 
 # Import statements
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import os
 import numpy as np
 import scipy.constants as constants
 import scipy.io as sio
 import csv
-import matplotlib.pyplot as plt
-
-import pdb
 
 
 
@@ -543,12 +543,8 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             # Estimated kinematic covariance
             P_est = P_pre - (K * (H * P_pre))
 
-            # pdb.set_trace()
-
             # Save data
             trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_est, P_est, X_pre, P_pre)
-
-            # pdb.set_trace()
 
     return trackMultiIn
 
@@ -755,12 +751,3 @@ def ProcessFile(filename):
             plt.ylim(ylims)
             plt.savefig(saveFolder + '/single' + str(rx+1) + '.png')
             plt.close()
-
-
-
-### Process set file if run from main ###
-#TEMP, REMOVE
-
-if __name__ == '__main__':
-    inputFolder = os.path.dirname(os.path.realpath(__file__)) + '/Input/'
-    ProcessFile(inputFolder + 'TrackingTestInitial_102521_1242.mat')
