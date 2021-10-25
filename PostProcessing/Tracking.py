@@ -1,13 +1,12 @@
-### Setup ###
+### Settings ###
 
 # Import statements
+import os
 import numpy as np
 import scipy.constants as constants
 import scipy.io as sio
-import os
 import csv
-if __name__ == '__main__':
-    import pdb
+
 
 
 ### Function declarations ###
@@ -602,7 +601,7 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
 ### Main ###
 
 def ProcessFile(filename):
-        
+
     # Set tracking parameters
     trackParams = dict(
         max_vel = 250,
