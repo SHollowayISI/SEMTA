@@ -4,7 +4,10 @@
 import numpy as np
 import scipy.constants as constants
 import scipy.io as sio
-import pdb
+import os
+import csv
+if __name__ == '__main__':
+    import pdb
 
 
 ### Function declarations ###
@@ -513,7 +516,7 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             H = np.eye(6)
 
             # Measurement residual
-            Z_res = Z.T - (H * X_pre)
+            Z_res = Z - (H * X_pre)
 
 
             ## Estimation Step
@@ -663,9 +666,58 @@ def ProcessFile(filename):
     # Multistatic tracking
     trackingMulti = TrackingMultiBidirectional(trackingMulti, trackParams)
 
+    ### Results processing ###
+
+    # Create output folder if it doesn't exist
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    saveFolder = dir_path + '/Output'
+    if not os.path.exists(saveFolder):
+        os.makedirs(saveFolder)
+
+    # Collect filename without path or extension
+    rawFilename = filename.replace("\\","/").split('/')[-1]
+    rawFilename = rawFilename.split('.')[0]
+
+    # Create folder for CSVs
+    saveFolder = saveFolder + '/' + rawFilename
+    if not os.path.exists(saveFolder):
+        os.makedirs(saveFolder)
+    
+    # Generate result matrix
+    positionEstimate = [None]*numFr
+    for fr in range(numFr):
+        positionEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(el) for el in trackingMulti['estimate'][fr]['pos']]
+
+    # Save multistatic results
+    with open(saveFolder + '/multi.csv', mode='w', newline='') as csv_out:
+        csvWriter = csv.writer(csv_out, delimiter=',', quotechar='"')
+        csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
+        csvWriter.writerows(positionEstimate)
+
+    # Save single unit results
+    for rx in range(numRx):
+        with open(saveFolder + '/single' + str(rx) + '.csv', mode='w', newline='') as csv_out:
+            
+            singleEstimate = [None]*numFr
+            for fr in range(numFr):
+                
+                if trackSingle[rx]['hit_list'][fr]:
+                    singleEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(el) for el in trackSingle[rx]['estimate'][fr]['cart']]
+                    if np.isnan(singleEstimate[fr][-1]):
+                        singleEstimate[fr] = [fr+1, trackParams['frame_time']*(fr+0.5), '', '']
+                
+                else:
+                    singleEstimate[fr] = [fr+1, trackParams['frame_time']*(fr+0.5), '', '']
+            
+            csvWriter = csv.writer(csv_out, delimiter=',', quotechar='"')
+            csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
+            csvWriter.writerows(singleEstimate)
+
 
 
 ### Process set file if run from main ###
+#TEMP, REMOVE
 
 if __name__ == '__main__':
-    ProcessFile('TrackingTestInitial_101921_1559.mat')
+    inputFolder = os.path.dirname(os.path.realpath(__file__)) + '/Input/'
+    ProcessFile(inputFolder + 'TrackingTestInitial_101921_1559.mat')

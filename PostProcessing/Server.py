@@ -5,7 +5,6 @@ import traceback
 
 # Get local file path
 dir_path = os.path.dirname(os.path.realpath(__file__))
-print(dir_path)
 
 # Setting variables
 uploadFolder = dir_path + '\Input'
@@ -63,5 +62,3 @@ def uploadFile():
             return outputMsg + errorMsg, 500
 
         return 'File successfully processed!', 201
-        
-        
