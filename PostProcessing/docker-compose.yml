@@ -1,0 +1,14 @@
+services:
+
+  semta_server:
+    build: .
+    container_name: semta_server
+    volumes:
+      - ./Input:/app/Input
+      - ./Output:/app/Output
+    environment:
+      FLASK_APP: Server.py
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+      

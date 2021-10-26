@@ -62,3 +62,7 @@ def uploadFile():
             return outputMsg + errorMsg, 500
 
         return 'File successfully processed!', 201
+
+# Main path
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
