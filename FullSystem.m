@@ -15,6 +15,7 @@
         - Add CFAR to fixed point processing
         - CFAR range migration fix 
         - Asynchronous tracking
+        - Tracking plotting
     
 %}
 
