@@ -13,8 +13,9 @@
               linearFMwaveform object
         - RCS aspect angle dependent upon velocity direction
         - Add CFAR to fixed point processing
-        - CFAR range migration fix 
-        - Asynchronous tracking
+        - CFAR 
+
+    Notes to self:
     
 %}
 
