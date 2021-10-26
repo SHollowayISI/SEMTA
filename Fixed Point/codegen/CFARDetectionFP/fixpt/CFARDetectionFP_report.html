@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Fixed-Point Report for CFARDetectionFP</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+	body { font-family: monospace; }
+	h2 { font-family: Arial, Helvetica, sans-serif; color: #990000; margin-top: 50px; }
+	table,th,td { border: 1px solid black; }
+	table { margin-top: 30px; }
+	th { align: center; font-weight: bold; }
+	tr.h { background-color: #99CCFF; }
+	tr.a { background-color: #EEEEFF; }
+	tr.b { background-color: #FFFFFF; }
+	tr.c { background-color: #FFA500; }
+	tr.a td, tr.b td { border-style: none; }
+	td.left { text-align: left; }
+	td.right { text-align: right; }
+	td.center { text-align: center; }
+	td.bold { font-weight: bold; }
+	pre { padding: 0px; margin: 0px; }
+	span { font-style: italic; }
+	.code, .code tr, .code th, .code td { border: none; border-collapse: collapse; }
+	.padd { padding-left: 5px; }
+	td.cov, th.cov { width: 50px; height: 20px; text-align: center; font-weight: bold; border-right: 2px solid black; cell-spacing: 0px; }
+	td.cov { vertical-align: top; }
+	td.black { color: #000000; font-weight: bold; padding-top: 4px; }
+	td.white { color: #FFFFFF; font-weight: bold; padding-top: 4px; }
+	.code th { font-weight: bold; border-bottom: 2px solid black; }
+</style>
+</head>
+<body>
+<h3>Generated on  2021-10-26 12:22:48</h3>
+<p>The following table shows fixed point instrumentation results</p>
+<h2>Fixed-Point Report <span>CFARDetectionFP<span></h2>
+<TABLE class="code">
+<TR>
+<TH class="cov padd">Simulation Coverage</TH>
+<TH>Code</TH>
+</TR>
+<TR>
+<TD class="cov white" style="background-color: rgb(5,112,9);">100%</TD>
+<TD class="padd"><pre>function [indexList, powerList] = CFARDetectionFP(dataCube, ...
+    offsetList, maxNumOutputs, threshFactor, ...
+    N_rng, N_dop, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop)
+    
+    % Initialize output lists to a maximum size
+    indexList = zeros(maxNumOutputs,1);    
+    powerList = zeros(maxNumOutputs,1);
+    listCounter = int32(1);
+
+    % Calculate index limits
+    R_maxDist = Ntrain_rng + Nguard_rng;
+    D_maxDist = Ntrain_dop + Nguard_dop;
+    R_limits = [R_maxDist + 1, N_rng - R_maxDist];
+    D_limits = [D_maxDist + 1, N_dop - D_maxDist];
+        
+    % Loop through indices to test
+    for R_ind = R_limits(1):R_limits(2)
+</pre></TD>
+</TR>
+<TR>
+<TD class="cov black" style="background-color: rgb(255,160,118);">Once</TD>
+<TD class="padd"><pre>        for D_ind = D_limits(1):D_limits(2)
+            
+            % Determine linear index of CUT
+            linIndex = sub2ind([N_rng, N_dop], R_ind, D_ind);
+            
+            % Average over power
+            threshold = mean(dataCube(linIndex + offsetList)) * threshFactor;
+ 
+</pre></TD>
+</TR>
+<TR>
+<TD class="cov black" style="background-color: rgb(601,449,579);">-159%</TD>
+<TD class="padd"><pre>            if dataCube(linIndex) &gt; threshold
+                
+                % Add entry to list
+                indexList(listCounter) = linIndex;
+                powerList(listCounter) = dataCube(linIndex);
+                listCounter = listCounter + 1;
+                
+                % Break at end of list
+</pre></TD>
+</TR>
+<TR>
+<TD class="cov white" style="background-color: rgb(5,112,9);">100%</TD>
+<TD class="padd"><pre>                if listCounter &gt; maxNumOutputs
+                    return
+                end
+            end
+        end
+    end
+end</pre></TD>
+</TR>
+</TABLE>
+<TABLE><TR class="h"><th>Variable Name</th><th>Type</th><th>Sim Min</th><th>Sim Max</th><th>Static Min</th><th>Static Max</th><th>Whole Number</th><th>ProposedType <BR /> (Best For WL = 32)</th></TR><TR class="a">
+<TD class="left">D_ind</TD><TD class="left">double</TD><TD class="right">6</TD><TD class="right">1019</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 10, 0)</TD></TR>
+<TR class="b">
+<TD class="left">D_limits</TD><TD class="left">double 1 x 2 </TD><TD class="right">6</TD><TD class="right">1019</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 10, 0)</TD></TR>
+<TR class="a">
+<TD class="left">D_maxDist</TD><TD class="left">double</TD><TD class="right">5</TD><TD class="right">5</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 3, 0)</TD></TR>
+<TR class="b">
+<TD class="left">N_dop</TD><TD class="left">double</TD><TD class="right">1024</TD><TD class="right">1024</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 11, 0)</TD></TR>
+<TR class="a">
+<TD class="left">N_rng</TD><TD class="left">double</TD><TD class="right">1250</TD><TD class="right">1250</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 11, 0)</TD></TR>
+<TR class="b">
+<TD class="left">Nguard_dop</TD><TD class="left">double</TD><TD class="right">3</TD><TD class="right">3</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 2, 0)</TD></TR>
+<TR class="a">
+<TD class="left">Nguard_rng</TD><TD class="left">double</TD><TD class="right">3</TD><TD class="right">3</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 2, 0)</TD></TR>
+<TR class="b">
+<TD class="left">Ntrain_dop</TD><TD class="left">double</TD><TD class="right">2</TD><TD class="right">2</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 2, 0)</TD></TR>
+<TR class="a">
+<TD class="left">Ntrain_rng</TD><TD class="left">double</TD><TD class="right">15</TD><TD class="right">15</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 4, 0)</TD></TR>
+<TR class="b">
+<TD class="left">R_ind</TD><TD class="left">double</TD><TD class="right">19</TD><TD class="right">1232</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 11, 0)</TD></TR>
+<TR class="a">
+<TD class="left">R_limits</TD><TD class="left">double 1 x 2 </TD><TD class="right">19</TD><TD class="right">1232</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 11, 0)</TD></TR>
+<TR class="b">
+<TD class="left">R_maxDist</TD><TD class="left">double</TD><TD class="right">18</TD><TD class="right">18</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 5, 0)</TD></TR>
+<TR class="a">
+<TD class="left">dataCube</TD><TD class="left">double 1250 x 1024 </TD><TD class="right">0</TD><TD class="right">3237.224013385192</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(0, 32, 20)</TD></TR>
+<TR class="b">
+<TD class="left">indexList</TD><TD class="left">double :Inf x 1 </TD><TD class="right">0</TD><TD class="right">710490</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 20, 0)</TD></TR>
+<TR class="a">
+<TD class="left">linIndex</TD><TD class="left">double</TD><TD class="right">6269</TD><TD class="right">1273732</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 21, 0)</TD></TR>
+<TR class="b">
+<TD class="left bold">listCounter*</TD><TD class="left">int32</TD><TD class="right">1</TD><TD class="right">76</TD><TD class="right">1</TD><TD class="right">65536</TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 32, 0)</TD></TR>
+<TR class="a">
+<TD class="left">maxNumOutputs</TD><TD class="left">double</TD><TD class="right">65536</TD><TD class="right">65536</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(0, 17, 0)</TD></TR>
+<TR class="b">
+<TD class="left">offsetList</TD><TD class="left">double 1 x 358 </TD><TD class="right">-6268</TD><TD class="right">6268</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">Yes</TD><TD class="left">numerictype(1, 14, 0)</TD></TR>
+<TR class="a">
+<TD class="left">powerList</TD><TD class="left">double :Inf x 1 </TD><TD class="right">0</TD><TD class="right">3237.224013385192</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(0, 32, 20)</TD></TR>
+<TR class="b">
+<TD class="left">threshFactor</TD><TD class="left">double</TD><TD class="right">14.085548907357197</TD><TD class="right">14.085548907357197</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(0, 32, 28)</TD></TR>
+<TR class="a">
+<TD class="left">threshold</TD><TD class="left">double</TD><TD class="right">5.181074752830029e-06</TD><TD class="right">441.2217244486067</TD><TD class="right"></TD><TD class="right"></TD><TD class="left">No</TD><TD class="left">numerictype(0, 32, 23)</TD></TR>
+</TABLE>
+
+</body>
+</html>
