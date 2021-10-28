@@ -4,9 +4,9 @@ function [] = EmailSetup()
 
 %% Set up email server
 
-from_email = 'shsimupdate@gmail.com';
-username = 'shsimupdate';
-password = 'Frisco_5';
+from_email = 'INSERT EMAIL HERE';
+username = 'INSERT USERNAME HERE';
+password = 'INSERT PASSWORD HERE';
 
 setpref('Internet','SMTP_Server','smtp.gmail.com');
 setpref('Internet','E_mail',from_email);

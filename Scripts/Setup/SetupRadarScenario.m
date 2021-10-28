@@ -76,20 +76,20 @@ scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
 wait_mode = struct( ...
-    'init_angle',   -45, ...              % Idle beam steering angle TODO:CHANGE!!!
-    'int_type',     'binary');      % Integration type for wait mode
+    'init_angle',   0, ...              % Idle beam steering angle TODO:CHANGE!!!
+    'int_type',     'binary');          % Integration type for wait mode
 
 % Static mode properties
 static_mode = struct( ...
     'init_angle',   0, ...              % Constant beam steering angle
-    'int_type',     'incoherent');          % Integration type for static mode
+    'int_type',     'incoherent');      % Integration type for static mode
 
 % Search mode properties
 search_mode = struct( ...
     'init_angle',   45, ...             % Initial angle
     'search_step',  -5, ...             % Angle delta per dwell, in degrees
     'search_max',   45, ...             % Maximum angle for search mode
-    'int_type',     'binary');      % Integration type for search mode
+    'int_type',     'binary');          % Integration type for search mode
 
 % Track mode properties
 track_mode = struct( ...
@@ -100,7 +100,7 @@ track_mode = struct( ...
 % Ideal (debug) track mode properties
 ideal_track_mode = struct( ...
     'init_angle',   0, ...              % Initial angle (unused)
-    'int_type',     'incoherent');          % Integration type for ideal track mode
+    'int_type',     'incoherent');      % Integration type for ideal track mode
 
 % Add to data structure
 scenario.radarsetup.modes = struct( ...
