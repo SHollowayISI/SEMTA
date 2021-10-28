@@ -46,9 +46,9 @@ scenario.traj = struct( ...
     ...
     ... % Trajectory model options
     'alt',      0, ...                % Altitude in meters
-    'yvel',     50 + 200*rand(1), ...                % Along track velocity in m/s
-    'exc',      100 - 200 * rand(1), ...                % Excursion distance in meters
-    'per',      0.2*rand(1), ...                % Excursion period (Nominally 0.05 to 0.2)
+    'yvel',     200, ...                % Along track velocity in m/s
+    'exc',      50, ...                % Excursion distance in meters
+    'per',      0.1, ...                % Excursion period (Nominally 0.05 to 0.2)
     ...
     ... % Static options
     'pos_st',   [0; 0; 0], ...          % Position input if 'static' is used
