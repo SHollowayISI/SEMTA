@@ -47,7 +47,7 @@ for unit = 1:scenario.multi.n_re
         %% Data Processing (Single frame)
         
         % Perform radar detection
-        scenario.detection = Detection(scenario);
+        scenario.detection = Detection_FixedPoint(scenario);
         
         % Perform single unit tracking
         scenario = Tracking_SingleUnit(scenario);

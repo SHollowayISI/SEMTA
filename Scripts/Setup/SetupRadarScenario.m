@@ -46,6 +46,7 @@ scenario.radarsetup = struct( ...
     'Pfa',          1e-6, ...           % Probability of false alarm for CFAR
     'num_guard',    [3 3], ...          % Number of R-D guard cells for CFAR detection
     'num_train',    [15 2], ...         % Number of R-D training cells for CFAR detection
+    'rng_limits',   [500, 7000], ...    % Min/max range values, to avoid false alarms
     'det_m',        2);                 % M for m-of-n processing
 
 % Tracking Parameters

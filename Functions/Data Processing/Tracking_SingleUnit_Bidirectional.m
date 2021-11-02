@@ -42,8 +42,6 @@ for fr = 1:scenario.multi.n_fr
         track.estimate{fr}.range = sqrt(sum(state_new([1 4]).^2));
         track.estimate{fr}.speed = sqrt(sum(state_new([2 5]).^2));
         
-        track.estimate{fr}.cart
-        
     end
     
 end

@@ -8,15 +8,11 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - Frequency diversity
-            - Frequency hopping can be implemented via FrequencyOffset port on
-              linearFMwaveform object
-        - RCS aspect angle dependent upon velocity direction
-        - Add CFAR to fixed point processing
+        - CFAR fixed point correction
         - CFAR range migration fix 
         - Asynchronous tracking
         - Tracking plotting
-    
+        - Detection algorithm change for floating point CFAR
 %}
 
 %% Housekeeping, Timing, and Path Management

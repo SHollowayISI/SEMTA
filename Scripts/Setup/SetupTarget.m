@@ -51,11 +51,11 @@ scenario.traj = struct( ...
     'per',      0.1, ...                % Excursion period (Nominally 0.05 to 0.2)
     ...
     ... % Static options
-    'pos_st',   [0; 0; 0], ...          % Position input if 'static' is used
-    'vel_st',   [0; 0; 0], ...          % Velocity input if 'static' is used
+    'pos_st',   [0; 100; 0], ...          % Position input if 'static' is used
+    'vel_st',   [100; 100; 0], ...          % Velocity input if 'static' is used
     ...
     ... % Model options
-    'model',    'model');              % Set 'static', 'model', 'linear', or 'model_constant'
+    'model',    'linear');              % Set 'static', 'model', 'linear', or 'model_constant'
 
 % Run Trajectory model
 scenario.traj = TrajectoryModel(scenario.traj);

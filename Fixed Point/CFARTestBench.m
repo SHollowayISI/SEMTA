@@ -14,13 +14,17 @@ offsetList = filein.offsetList;
 y_small = abs(y_small).^2;
 y_large = abs(y_large).^2;
 
+% Doppler wrapping
+y_small(:,end+1,:) = y_small(:,1,:);
+y_large(:,end+1,:) = y_large(:,1,:);
+
 % Set variables
 Nguard_rng = 3;
 Nguard_dop = 3;
 Ntrain_rng = 15;
 Ntrain_dop = 2;
 Nr = 1250;
-Nd = 1024;
+Nd = 1025;
 Pfa = 1e-6;
 maxNumOutputs = 65536;
 
@@ -28,6 +32,10 @@ maxNumOutputs = 65536;
 % NOTE: This should probably be hardcoded for embedded purposes
 %{
 offsetList = [];
+R_maxDist = Ntrain_rng + Nguard_rng;
+D_maxDist = Ntrain_dop + Nguard_dop;
+N_rng = Nr;
+N_dop = Nd;
 
 % Top and bottom of square
 for ind = 1:Ntrain_dop
@@ -52,15 +60,23 @@ threshFactor = N * (Pfa ^ (-1/N) - 1);
 
 % Run CFAR test cases
 for n = 1:2
-    [small_idx{n}, small_pow{n}] = CFARDetectionFP_wrapper_fixpt_mex( ...
-        'CFARDetectionFP_wrapper_fixpt', y_small(:,:,n), ...
+%     [small_idx{n}, small_pow{n}] = CFARDetectionFP_wrapper_fixpt_mex( ...
+%         'CFARDetectionFP_wrapper_fixpt', y_small(:,:,n), ...
+%         offsetList, maxNumOutputs, threshFactor, ...
+%         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
+
+    [small_idx{n}, small_pow{n}] = CFARDetectionFP(y_small(:,:,n), ...
         offsetList, maxNumOutputs, threshFactor, ...
         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
 end
 
 for n = 1:2
-    [large_idx{n}, large_pow{n}] = CFARDetectionFP_wrapper_fixpt_mex( ...
-        'CFARDetectionFP_wrapper_fixpt', y_small(:,:,n), ...
+%     [large_idx{n}, large_pow{n}] = CFARDetectionFP_wrapper_fixpt_mex( ...
+%         'CFARDetectionFP_wrapper_fixpt', y_small(:,:,n), ...
+%         offsetList, maxNumOutputs, threshFactor, ...
+%         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
+
+    [large_idx{n}, large_pow{n}] = CFARDetectionFP(y_large(:,:,n), ...
         offsetList, maxNumOutputs, threshFactor, ...
         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
 end

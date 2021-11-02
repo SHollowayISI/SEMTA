@@ -56,10 +56,6 @@ for fr = 1:scenario.multi.n_fr
         
     end
     
-    est_f.pos
-    est_r.pos
-    tracking_multi.track_estimate{fr}.pos
-    
 end
 
 %% Generate new detection list

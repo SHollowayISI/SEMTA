@@ -6,8 +6,7 @@
 /Parsed Data/*
 /Scratch/*
 Scratch.m
-/Results/*
-/Results/
+/Results/Tracking
 /PostProcessing/__pycache__
 /PostProcessing/Input
 /PostProcessing/Output

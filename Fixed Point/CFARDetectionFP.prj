@@ -879,7 +879,7 @@
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>true</param.FixedPointEnabled>
     <var.redirectedInputTypeData />
-    <var.DismissScreener>true</var.DismissScreener>
+    <var.DismissScreener>false</var.DismissScreener>
     <param.unifiedParamStorage />
     <var.gc.lastOutputRoot />
     <var.gc.lastOutputType />
@@ -991,7 +991,7 @@
             <Column property="SimMax" type="Double" value="3237.224013385192" />
             <MATLABType class="double" complex="false">
               <size>1250</size>
-              <size>1024</size>
+              <size>1025</size>
             </MATLABType>
             <Column property="IsInteger" type="Boolean" value="false" />
             <Column property="ProposedType" type="String" value="numerictype(0, 32, 20)" />
@@ -1004,7 +1004,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="9.536741716332218E-7" />
           </Variable>
           <Variable name="offsetList" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1025,7 +1024,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="maxNumOutputs" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1046,7 +1044,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="threshFactor" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1067,7 +1064,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="3.5641001261410565E-9" />
           </Variable>
           <Variable name="N_rng" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1088,12 +1084,11 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="N_dop" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="1024.0" />
-            <Column property="SimMax" type="Double" value="1024.0" />
+            <Column property="SimMin" type="Double" value="1025.0" />
+            <Column property="SimMax" type="Double" value="1025.0" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -1109,7 +1104,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="Ntrain_rng" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1130,7 +1124,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="Ntrain_dop" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1151,7 +1144,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="Nguard_rng" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1172,7 +1164,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="Nguard_dop" specid="-1">
             <Column property="Kind" type="String" value="input" />
@@ -1193,7 +1184,6 @@
             <Column property="SumWordLength" type="Double" value="32" />
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
-            <Column property="NumericalError" type="Double" value="0.0" />
           </Variable>
           <Variable name="listCounter" specid="-1">
             <Column property="Kind" type="String" value="local" />
@@ -1278,7 +1268,7 @@
           <Variable name="D_limits" specid="-1">
             <Column property="Kind" type="String" value="local" />
             <Column property="SimMin" type="Double" value="6.0" />
-            <Column property="SimMax" type="Double" value="1019.0" />
+            <Column property="SimMax" type="Double" value="1020.0" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>2</size>
@@ -1318,7 +1308,7 @@
           <Variable name="D_ind" specid="-1">
             <Column property="Kind" type="String" value="local" />
             <Column property="SimMin" type="Double" value="6.0" />
-            <Column property="SimMax" type="Double" value="1019.0" />
+            <Column property="SimMax" type="Double" value="1020.0" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -1338,7 +1328,7 @@
           <Variable name="linIndex" specid="-1">
             <Column property="Kind" type="String" value="local" />
             <Column property="SimMin" type="Double" value="6269.0" />
-            <Column property="SimMax" type="Double" value="1273732.0" />
+            <Column property="SimMax" type="Double" value="1274982.0" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -1381,12 +1371,8 @@
     <param.UserFixedPointData>
       <UserEntities>
         <Function file="$(PROJECTDIR)\CFARDetectionFP.m" name="CFARDetectionFP" specialization="CFARDetectionFP" specializationId="-1" uniqueId="CFARDetectionFP">
-          <Variable name="indexList" specid="-1">
-            <Column property="LoggingEnabled" type="Boolean" value="true" />
-          </Variable>
-          <Variable name="powerList" specid="-1">
-            <Column property="LoggingEnabled" type="Boolean" value="true" />
-          </Variable>
+          <Variable name="indexList" specid="-1" />
+          <Variable name="powerList" specid="-1" />
           <Variable name="dataCube" specid="-1">
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
@@ -1394,6 +1380,10 @@
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="maxNumOutputs" specid="-1">
+            <Column property="DesignRangeIsAutoDefined" type="Boolean" value="false" />
+            <Column property="DesignMin" type="Double" value="1.0" />
+            <Column property="DesignMax" type="Double" value="65536.0" />
+            <Column property="ProposedType" type="String" value="numerictype(0, 32, 0)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="threshFactor" specid="-1">
@@ -1441,16 +1431,16 @@
     <param.FixedPointTypeSource>option.FixedPointTypeSource.SimAndDerived</param.FixedPointTypeSource>
     <param.StaticAnalysisTimeout />
     <param.StaticAnalysisGlobalRangesOnly>false</param.StaticAnalysisGlobalRangesOnly>
-    <param.LogAllIOValues>true</param.LogAllIOValues>
+    <param.LogAllIOValues>false</param.LogAllIOValues>
     <param.DetectOverflows>false</param.DetectOverflows>
-    <param.LogHistogram>true</param.LogHistogram>
+    <param.LogHistogram>false</param.LogHistogram>
     <param.ShowCoverage>true</param.ShowCoverage>
     <param.ExcludedFixedPointVerificationFiles />
     <param.ExcludedFixedPointSimulationFiles />
-    <param.InstrumentedBuildChecksum>2707321224</param.InstrumentedBuildChecksum>
+    <param.InstrumentedBuildChecksum>1010668564</param.InstrumentedBuildChecksum>
     <param.FixedPointStaticAnalysisChecksum />
     <param.InstrumentedMexFile>${PROJECT_ROOT}\codegen\CFARDetectionFP\fixpt\CFARDetectionFP_float_mex.mexw64</param.InstrumentedMexFile>
-    <param.FixedPointValidationChecksum>2971896248</param.FixedPointValidationChecksum>
+    <param.FixedPointValidationChecksum>1770541215</param.FixedPointValidationChecksum>
     <param.FixedPointSourceCodeChecksum>1159508818</param.FixedPointSourceCodeChecksum>
     <param.FixedPointFunctionReplacements>
       <FunctionReplacements />
@@ -1464,17 +1454,17 @@
     <param.DefaultFixedPointSignedness>option.DefaultFixedPointSignedness.Automatic</param.DefaultFixedPointSignedness>
     <param.FixedPointTypeProposalMode>option.FixedPointTypeProposalMode.ProposeFractionLengths</param.FixedPointTypeProposalMode>
     <param.EnableFixedPointStep />
-    <var.lastFixedPointAction>option.fixedPointAction.verify</var.lastFixedPointAction>
+    <var.lastFixedPointAction>option.fixedPointAction.convert</var.lastFixedPointAction>
     <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARTestBench.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
     <var.lastVerifyContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARTestBench.m&lt;/file&gt;&lt;/testFiles&gt;&lt;syntheticCode&gt;&lt;/syntheticCode&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastVerifyContext>
     <param.fpDataRoot>C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\codegen\CFARDetectionFP\fixpt/guiFpReport.mat</param.fpDataRoot>
     <param.fpUserFileChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARDetectionFP.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1426857093&lt;/value&gt;&lt;/checksum&gt;</param.fpUserFileChecksum>
-    <var.snapshotChecksum>2385997177</var.snapshotChecksum>
-    <param.fpLastConvertChecksum>2707321224</param.fpLastConvertChecksum>
+    <var.snapshotChecksum>3421694130</var.snapshotChecksum>
+    <param.fpLastConvertChecksum>1010668564</param.fpLastConvertChecksum>
     <var.functionBlockSid />
     <param.fptSignedness />
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.Sim</var.FixedPointAnalysisMode>
-    <param.FixedPointUseDesignRanges>true</param.FixedPointUseDesignRanges>
+    <param.FixedPointUseDesignRanges>false</param.FixedPointUseDesignRanges>
     <unset>
       <param.ExternalFcnMajority />
       <param.UseGlobals />
@@ -1497,6 +1487,7 @@
       <var.LegacyTarget />
       <var.MirrorOnOpen />
       <var.redirectedInputTypeData />
+      <var.DismissScreener />
       <param.unifiedParamStorage />
       <var.gc.lastOutputRoot />
       <var.gc.lastOutputType />
@@ -1556,7 +1547,9 @@
       <param.FixedPointTypeSource />
       <param.StaticAnalysisTimeout />
       <param.StaticAnalysisGlobalRangesOnly />
+      <param.LogAllIOValues />
       <param.DetectOverflows />
+      <param.LogHistogram />
       <param.ShowCoverage />
       <param.ExcludedFixedPointVerificationFiles />
       <param.ExcludedFixedPointSimulationFiles />
@@ -1572,10 +1565,11 @@
       <var.functionBlockSid />
       <param.fptSignedness />
       <var.FixedPointAnalysisMode />
+      <param.FixedPointUseDesignRanges />
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}\CFARDetectionFP.m">
-        <Marker>1635274833995</Marker>
+        <Marker>1635734478726</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>
@@ -1597,7 +1591,7 @@
           <idpTable>
             <type typeId="0">
               <Class>double</Class>
-              <Size>1250 x 1024</Size>
+              <Size>1250 x 1025</Size>
               <Value />
               <InitialValue />
               <UserDefined>false</UserDefined>

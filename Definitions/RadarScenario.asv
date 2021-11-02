@@ -348,7 +348,7 @@ classdef RadarScenario < handle
             pbaspect([1 1 1]);
         end
         
-        function viewTrackingMulti(rs, showRadar)
+        function viewTrackingSingle(rs, showRadar)
             
             % Default variables
             if ~exist('showRadar', 'var')
@@ -359,18 +359,24 @@ classdef RadarScenario < handle
             figure('Name', 'Tracking Results');
             
             % Collect tracking data from each unit and frame
-            est_coords = nan(2, rs.multi.n_fr);
-            for frame = 1:rs.multi.n_fr
-                if rs.tracking_multi.hit_list(frame)
-                    est_coords(:,frame) = rs.tracking_multi.track_estimate{frame}.pos;
+            meas_coords = nan(2, rs.multi.n_fr, rs.multi.n_re);
+            est_coords = meas_coords;
+            for unit = 1:rs.multi.n_re
+                for frame = 1:rs.multi.n_fr
+                    if rs.tracking_single{unit}.hit_list(frame)
+                        meas_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
+                        est_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.estimate{frame}.cart;
+                    end
                 end
-            end
-            
-            % Plot results
-            plot(est_coords(2,:), est_coords(1,:), 'r');
-            hold on;
-            if showRadar
-                scatter(rs.multi.radar_pos(2,unit), rs.multi.radar_pos(1,unit), 'r', '.')
+    
+                % Plot results
+                scatter(meas_coords(2,:,unit), meas_coords(1,:,unit), 'b');
+                hold on;
+                plot(est_coords(2,:,unit), est_coords(1,:,unit), 'r');
+                hold on;
+                if showRadar
+                    scatter(rs.multi.radar_pos(2,unit), rs.multi.radar_pos(1,unit), 'r', '.')
+                end
             end
             
             % Adjust plot

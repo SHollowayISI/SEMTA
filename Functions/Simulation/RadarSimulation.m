@@ -67,6 +67,7 @@ for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
 
     % Get the range and angle to the target
     [~,tgt_ang] = rangeangle(tgt_pos,tx_pos);
+    [~,vel_ang] = rangeangle(tgt_vel);
     
     % Radiate the pulse toward the target
     sig = sim.radiator(tx_sig, tgt_ang, Tx_steer);
@@ -75,7 +76,7 @@ for chirp = 1:(radarsetup.n_p  * radarsetup.cpi_fr)
     sig = sim.target_chan(sig,tx_pos,tgt_pos,tx_vel,tgt_vel);
     
     % Reflect the pulse off the target
-    sig = sim.target(sig, rcs.evaluate(rcs, tgt_ang(1), radarsetup.f_c));
+    sig = sim.target(sig, rcs.evaluate(rcs, tgt_ang(1) + vel_ang(1), radarsetup.f_c));
     
     % Collect the echo from the incident angle at the antenna
     sig = sim.collector(sig, tgt_ang, Rx_steer);
