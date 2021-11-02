@@ -8,9 +8,8 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - CFAR range migration fix 
         - Asynchronous tracking
-        - Check if number of CPI per frame change with mode change
+        - CPI/integration/detection settings at mode start and change
 %}
 
 %% Housekeeping, Timing, and Path Management

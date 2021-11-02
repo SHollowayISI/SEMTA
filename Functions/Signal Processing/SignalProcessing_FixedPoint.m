@@ -51,7 +51,7 @@ cube.range_axis = (0:(1250-1)) * cube.range_res;
 
 % Derive Doppler axis
 cube.vel_res = lambda*(radarsetup.prf)/(2*radarsetup.n_p);
-cube.vel_axis = -cube.vel_res*((-1024/2):(1024/2));
+cube.vel_axis = cube.vel_res*((-1024/2):(1024/2));
 
 end
 

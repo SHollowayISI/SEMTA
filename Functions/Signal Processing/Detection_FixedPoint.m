@@ -71,17 +71,48 @@ for loop = 1:num_loops
     
     %% Perform CFAR Detection
     
-    % Call fixed point function
+    % Call fixed point function (binary executable)
     det_list = CFARDetectionFP_wrapper_fixpt_mex( ...
         'CFARDetectionFP_wrapper_fixpt', rd_cube, ...
         offsetList, maxNumOutputs, threshFactor, ...
         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
+    
+    % Call fixed point function (wrapper)
 %     det_list = CFARDetectionFP(rd_cube, ...
 %         offsetList, maxNumOutputs, threshFactor, ...
 %         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
     
-    % Remove empty values and sort
+    % Save single loop detection list
     detection.single_ind_list{loop} = sort(nonzeros(det_list));
+    
+    % Perform range migration compensation
+    if radarsetup.vel_comp && strcmp(radarsetup.int_type, 'binary')
+        
+        % Loop through detection indices
+        compensated_list = [];
+        for n = 1:length(detection.single_ind_list{loop})
+            
+            % Convert to subscripts
+            [rngI, dopI] = ind2sub(sz, detection.single_ind_list{loop}(n));
+            
+            % Determine number of range bins covered
+            binsPerCPI = cube.vel_axis(dopI) * radarsetup.cpi_time / cube.range_res;
+            offsetBins = round(binsPerCPI * ((1:num_loops)-loop));
+            
+            % Generate subscripts
+            rngIdxComp = rngI + offsetBins;
+            dopIdxComp = dopI * ones(size(rngIdxComp));
+            
+            % Add linear index to list
+            linIdxComp = sub2ind(sz, rngIdxComp, dopIdxComp);
+            compensated_list = [compensated_list; linIdxComp(:)]; 
+        end
+        
+        % Remove duplicates and update saved list
+        detection.single_ind_list{loop} = unique(compensated_list);
+    end
+    
+    % Generate power list
     [rngI, dopI] = ind2sub(sz, detection.single_ind_list{loop});
     for n = 1:2
         linI = sub2ind(size(cube.pow_cube), rngI, dopI, loop*ones(size(rngI)), n*ones(size(rngI)));
@@ -96,8 +127,12 @@ switch radarsetup.int_type
     case 'binary'
         
         % Concatenate all result lists
-        concat_list = detection.single_ind_list{:};
-        concat_pow_list = detection.pow_list{:};
+        concat_list = [];
+        concat_pow_list = [];
+        for n = 1:num_loops
+            concat_list = [concat_list; detection.single_ind_list{n}];
+            concat_pow_list = [concat_pow_list; detection.pow_list{n}];
+        end
         unique_list = unique(concat_list);
         
         % Loop through all unique detections
@@ -110,7 +145,7 @@ switch radarsetup.int_type
             count = sum(concat_list == ind);
             
             % Continue if not enough detections
-            if count < radarsetup.det_m
+            if count < min(radarsetup.det_m, radarsetup.cpi_fr)
                 continue;
             end
             
@@ -240,6 +275,7 @@ for n = 1:length(regions)
     
     % Lists of region indices
     regions(n).pixelIdxList = detection.combined_ind_list(label_list == unique_list(n));
+    regions(n).pixelIdxList = regions(n).pixelIdxList(:);
     [regions(n).rngIdxList, regions(n).dopIdxList] = ind2sub(sz, regions(n).pixelIdxList);
     
     % Derived lists of power values
@@ -300,7 +336,7 @@ for n = 1:length(regions)
         
     % Store direct coordinates
     detection.detect_list.range(end+1) = rangeCalc;
-    detection.detect_list.vel(end+1) = -interp1(cube.vel_axis, regions(n).weightedCentroid(2));
+    detection.detect_list.vel(end+1) = interp1(cube.vel_axis, regions(n).weightedCentroid(2));
     
     % Store derived coordinates
     detection.detect_list.cart(:,end+1) = detection.detect_list.range(end) * ...

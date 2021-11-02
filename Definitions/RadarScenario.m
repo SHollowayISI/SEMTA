@@ -290,10 +290,31 @@ classdef RadarScenario < handle
         end
         
         function viewDetections(rs)
+            
+            detect_cube = zeros(length(rs.cube.range_axis), length(rs.cube.vel_axis));
+            detect_cube(rs.detection.combined_ind_list) = 1;
+            
             figure('Name', 'Range-Doppler Detections');
             imagesc(rs.cube.vel_axis, ...
                 rs.cube.range_axis, ...
-                rs.detection.int_detect_cube)
+                detect_cube)
+            title('Range-Doppler Detections')
+            set(gca,'YDir','normal')
+            xlabel('Velocity [m/s]','FontWeight','bold')
+            ylabel('Range [m]','FontWeight','bold')
+        end
+        
+        function viewDetectionsAllFrames(rs)
+            
+            detect_cube = zeros(length(rs.cube.range_axis), length(rs.cube.vel_axis));
+            for n = 1:rs.radarsetup.cpi_fr
+                detect_cube(rs.detection.single_ind_list{n}) = 1;
+            end
+            
+            figure('Name', 'Range-Doppler Detections');
+            imagesc(rs.cube.vel_axis, ...
+                rs.cube.range_axis, ...
+                detect_cube)
             title('Range-Doppler Detections')
             set(gca,'YDir','normal')
             xlabel('Velocity [m/s]','FontWeight','bold')
