@@ -19,10 +19,10 @@ nm = 1852;
 %% Multistatic Scenario Setup
 
 % Locations of radar units
-num_receivers = 3;                      % Number of radar units
+num_receivers = 1;                      % Number of radar units
 dist_from_center    = 5000;             % Cross-track distance from track to radar units
 unit_spacing        = 1024;             % Spacing between units
-spacing_offset      = -1024;                % Along-track offset of units
+spacing_offset      = 0;                % Along-track offset of units
 
 radar_pos = ...
     [-dist_from_center  * ones(1,num_receivers); ...     % Constant x location
@@ -33,7 +33,7 @@ radar_pos = ...
 % Multistatic properties
 scenario.multi = struct( ...
     ...
-    'n_fr',         10, ...                    % Number of frames for simulation
+    'n_fr',         1, ...                    % Number of frames for simulation
     'n_re',         num_receivers, ...          % Number of radar units to simulate
     'radar_pos',    radar_pos);
 

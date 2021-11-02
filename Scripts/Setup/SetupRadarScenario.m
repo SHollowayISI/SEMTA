@@ -22,7 +22,7 @@ scenario.radarsetup = struct( ...
     'bw',       10e6, ...               % Bandwidth of chirp
     'prf',      20e3, ...               % Pulse repetition frequency in Hz
     'n_p',      1024, ...               % Number of pulses to simulate
-    'cpi_fr',   1, ...                  % Number of CPI per frame
+    'cpi_fr',   5, ...                  % Number of CPI per frame
     ...
     ... % Transceiver Properties
     'n_ant',        16, ...             % Number of elements in antenna array
@@ -72,12 +72,12 @@ scenario.radarsetup.frame_time = ...
 %% Radar Mode Setup
 
 % Set initial mode
-scenario.radarsetup.initial_mode = 'static';
+scenario.radarsetup.initial_mode = 'ideal';
 scenario.flags.mode = scenario.radarsetup.initial_mode;
 
 % Wait mode properties
 wait_mode = struct( ...
-    'init_angle',   0, ...              % Idle beam steering angle TODO:CHANGE!!!
+    'init_angle',   0, ...              % Idle beam steering angle
     'int_type',     'binary');          % Integration type for wait mode
 
 % Static mode properties
@@ -101,7 +101,7 @@ track_mode = struct( ...
 % Ideal (debug) track mode properties
 ideal_track_mode = struct( ...
     'init_angle',   0, ...              % Initial angle (unused)
-    'int_type',     'incoherent');      % Integration type for ideal track mode
+    'int_type',     'binary');      % Integration type for ideal track mode
 
 % Add to data structure
 scenario.radarsetup.modes = struct( ...

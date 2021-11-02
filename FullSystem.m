@@ -8,11 +8,9 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - CFAR fixed point correction
         - CFAR range migration fix 
         - Asynchronous tracking
-        - Tracking plotting
-        - Detection algorithm change for floating point CFAR
+        - Check if number of CPI per frame change with mode change
 %}
 
 %% Housekeeping, Timing, and Path Management

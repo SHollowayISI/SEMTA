@@ -309,20 +309,23 @@ classdef RadarScenario < handle
             grid on;
         end
         
-        function viewTrackingSingle(rs, showRadar)
+        function viewTrackingSingle(rs, unitsToPlot, showRadar)
             
             % Default variables
             if ~exist('showRadar', 'var')
                 showRadar = false;
             end
+            if ~exist('unitsToPlot', 'var')
+                unitsToPlot = 1:rs.multi.n_re;
+            end
             
             % Open figure
-            figure('Name', 'Tracking Results');
+            figure('Name', 'Single Unit Tracking Results');
             
             % Collect tracking data from each unit and frame
             meas_coords = nan(2, rs.multi.n_fr, rs.multi.n_re);
             est_coords = meas_coords;
-            for unit = 1:rs.multi.n_re
+            for unit = unitsToPlot
                 for frame = 1:rs.multi.n_fr
                     if rs.tracking_single{unit}.hit_list(frame)
                         meas_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
@@ -340,10 +343,12 @@ classdef RadarScenario < handle
                 end
             end
             
+            % Add labels
+            title('Single Unit Tracking Results');
+            xlabel('Along-Track Position [m]', 'FontWeight', 'bold');
+            ylabel('Cross-Track Position [m]', 'FontWeight', 'bold');
+            
             % Adjust plot
-            ax = gca;
-            xdiff = diff(ax.XLim);
-            ylim([-xdiff/2, xdiff/2]);
             grid on;
             pbaspect([1 1 1]);
         end
@@ -373,10 +378,12 @@ classdef RadarScenario < handle
                 scatter(rs.multi.radar_pos(2,unit), rs.multi.radar_pos(1,unit), 'r', '.')
             end
             
+            % Add labels
+            title('Multistatic Tracking Results');
+            xlabel('Along-Track Position [m]', 'FontWeight', 'bold');
+            ylabel('Cross-Track Position [m]', 'FontWeight', 'bold');
+            
             % Adjust plot
-            ax = gca;
-            xdiff = diff(ax.XLim);
-            ylim([-xdiff/2, xdiff/2]);
             grid on;
             pbaspect([1 1 1]);
         end

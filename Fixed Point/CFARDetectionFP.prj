@@ -853,9 +853,9 @@
       </unset>
     </profile>
     <param.objective>option.objective.fixedpoint</param.objective>
-    <param.WorkflowStep>fixedPoint</param.WorkflowStep>
+    <param.WorkflowStep>workflowSummary</param.WorkflowStep>
     <param.TestSnippets>
-      <item>CFARTestBench</item>
+      <item>CFARTestBench.m</item>
     </param.TestSnippets>
     <param.ExternalFcnMajority />
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
@@ -889,7 +889,7 @@
     <var.outdatedOnRestore />
     <var.lastUserSourceChecksum />
     <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARDetectionFP.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\codegen\CFARDetectionFP\fixpt\CFARDetectionFP_fixpt.m&lt;/file&gt;&lt;/fixedPointSourceFiles&gt;&lt;fixedPointSourceRegistered&gt;true&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;true&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
-    <param.forceMexBuild>true</param.forceMexBuild>
+    <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT />
     <param.configImportActive>false</param.configImportActive>
     <var.isGpuCoder>false</var.isGpuCoder>
@@ -1371,18 +1371,21 @@
     <param.UserFixedPointData>
       <UserEntities>
         <Function file="$(PROJECTDIR)\CFARDetectionFP.m" name="CFARDetectionFP" specialization="CFARDetectionFP" specializationId="-1" uniqueId="CFARDetectionFP">
-          <Variable name="indexList" specid="-1" />
+          <Variable name="indexList" specid="-1">
+            <Column property="IsInteger" type="Boolean" value="true" />
+            <Column property="ProposedType" type="String" value="numerictype(0, 32, 0)" />
+          </Variable>
           <Variable name="powerList" specid="-1" />
           <Variable name="dataCube" specid="-1">
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="offsetList" specid="-1">
+            <Column property="IsInteger" type="Boolean" value="true" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 32, 0)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="maxNumOutputs" specid="-1">
-            <Column property="DesignRangeIsAutoDefined" type="Boolean" value="false" />
-            <Column property="DesignMin" type="Double" value="1.0" />
-            <Column property="DesignMax" type="Double" value="65536.0" />
+            <Column property="IsInteger" type="Boolean" value="true" />
             <Column property="ProposedType" type="String" value="numerictype(0, 32, 0)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
@@ -1408,9 +1411,7 @@
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="listCounter" specid="-1">
-            <Column property="DesignRangeIsAutoDefined" type="Boolean" value="false" />
-            <Column property="DesignMin" type="Double" value="1.0" />
-            <Column property="DesignMax" type="Double" value="65536.0" />
+            <Column property="IsInteger" type="Boolean" value="true" />
             <Column property="ProposedType" type="String" value="numerictype(0, 32, 0)" />
           </Variable>
           <Variable name="R_maxDist" specid="-1" />
@@ -1419,7 +1420,10 @@
           <Variable name="D_limits" specid="-1" />
           <Variable name="R_ind" specid="-1" />
           <Variable name="D_ind" specid="-1" />
-          <Variable name="linIndex" specid="-1" />
+          <Variable name="linIndex" specid="-1">
+            <Column property="IsInteger" type="Boolean" value="true" />
+            <Column property="ProposedType" type="String" value="numerictype(0, 32, 0)" />
+          </Variable>
           <Variable name="threshold" specid="-1" />
         </Function>
       </UserEntities>
@@ -1437,10 +1441,10 @@
     <param.ShowCoverage>true</param.ShowCoverage>
     <param.ExcludedFixedPointVerificationFiles />
     <param.ExcludedFixedPointSimulationFiles />
-    <param.InstrumentedBuildChecksum>1010668564</param.InstrumentedBuildChecksum>
+    <param.InstrumentedBuildChecksum>695503823</param.InstrumentedBuildChecksum>
     <param.FixedPointStaticAnalysisChecksum />
     <param.InstrumentedMexFile>${PROJECT_ROOT}\codegen\CFARDetectionFP\fixpt\CFARDetectionFP_float_mex.mexw64</param.InstrumentedMexFile>
-    <param.FixedPointValidationChecksum>1770541215</param.FixedPointValidationChecksum>
+    <param.FixedPointValidationChecksum>2073075829</param.FixedPointValidationChecksum>
     <param.FixedPointSourceCodeChecksum>1159508818</param.FixedPointSourceCodeChecksum>
     <param.FixedPointFunctionReplacements>
       <FunctionReplacements />
@@ -1454,17 +1458,17 @@
     <param.DefaultFixedPointSignedness>option.DefaultFixedPointSignedness.Automatic</param.DefaultFixedPointSignedness>
     <param.FixedPointTypeProposalMode>option.FixedPointTypeProposalMode.ProposeFractionLengths</param.FixedPointTypeProposalMode>
     <param.EnableFixedPointStep />
-    <var.lastFixedPointAction>option.fixedPointAction.convert</var.lastFixedPointAction>
+    <var.lastFixedPointAction>option.fixedPointAction.verify</var.lastFixedPointAction>
     <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARTestBench.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
     <var.lastVerifyContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARTestBench.m&lt;/file&gt;&lt;/testFiles&gt;&lt;syntheticCode&gt;&lt;/syntheticCode&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastVerifyContext>
     <param.fpDataRoot>C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\codegen\CFARDetectionFP\fixpt/guiFpReport.mat</param.fpDataRoot>
     <param.fpUserFileChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;C:\Users\hollo\Documents\MATLAB\SEMTA\Fixed Point\CFARDetectionFP.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;1426857093&lt;/value&gt;&lt;/checksum&gt;</param.fpUserFileChecksum>
-    <var.snapshotChecksum>3421694130</var.snapshotChecksum>
-    <param.fpLastConvertChecksum>1010668564</param.fpLastConvertChecksum>
+    <var.snapshotChecksum>2345117561</var.snapshotChecksum>
+    <param.fpLastConvertChecksum>695503823</param.fpLastConvertChecksum>
     <var.functionBlockSid />
     <param.fptSignedness />
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.Sim</var.FixedPointAnalysisMode>
-    <param.FixedPointUseDesignRanges>false</param.FixedPointUseDesignRanges>
+    <param.FixedPointUseDesignRanges>true</param.FixedPointUseDesignRanges>
     <unset>
       <param.ExternalFcnMajority />
       <param.UseGlobals />
@@ -1496,6 +1500,7 @@
       <var.cfi.preBuildChecksum />
       <var.outdatedOnRestore />
       <var.lastUserSourceChecksum />
+      <param.forceMexBuild />
       <param.NoDefaultJIT />
       <param.configImportActive />
       <var.isGpuCoder />
@@ -1565,11 +1570,10 @@
       <var.functionBlockSid />
       <param.fptSignedness />
       <var.FixedPointAnalysisMode />
-      <param.FixedPointUseDesignRanges />
     </unset>
     <fileset.entrypoints>
       <file custom-data-expanded="false" value="${PROJECT_ROOT}\CFARDetectionFP.m">
-        <Marker>1635734478726</Marker>
+        <Marker>1635815945035</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>

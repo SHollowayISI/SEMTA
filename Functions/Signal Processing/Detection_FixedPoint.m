@@ -72,13 +72,13 @@ for loop = 1:num_loops
     %% Perform CFAR Detection
     
     % Call fixed point function
-%     det_list = CFARDetectionFP_wrapper_fixpt_mex( ...
-%         'CFARDetectionFP_wrapper_fixpt', rd_cube, ...
-%         offsetList, maxNumOutputs, threshFactor, ...
-%         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
-    det_list = CFARDetectionFP(rd_cube, ...
+    det_list = CFARDetectionFP_wrapper_fixpt_mex( ...
+        'CFARDetectionFP_wrapper_fixpt', rd_cube, ...
         offsetList, maxNumOutputs, threshFactor, ...
         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
+%     det_list = CFARDetectionFP(rd_cube, ...
+%         offsetList, maxNumOutputs, threshFactor, ...
+%         Nr, Nd, Ntrain_rng, Ntrain_dop, Nguard_rng, Nguard_dop);
     
     % Remove empty values and sort
     detection.single_ind_list{loop} = sort(nonzeros(det_list));
@@ -277,10 +277,10 @@ for n = 1:length(regions)
     
     % Test coarse range calculation
     rangeMeas = interp1(cube.range_axis, regions(n).weightedCentroid(1));
-%     if (rangeMeas < radarsetup.rng_limits(1)) || (rangeMeas > radarsetup.rng_limits(2))
-%         detection.detect_list.num_detect = detection.detect_list.num_detect - 1;
-%         continue;
-%     end
+    if (rangeMeas < radarsetup.rng_limits(1)) || (rangeMeas > radarsetup.rng_limits(2))
+        detection.detect_list.num_detect = detection.detect_list.num_detect - 1;
+        continue;
+    end
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
     monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit))^-2) * ...

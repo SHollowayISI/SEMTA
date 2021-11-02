@@ -11,7 +11,7 @@ function [indexList, powerList] = CFARDetectionFP_fixpt(dataCube, ...
     % Initialize output lists to a maximum size
     fm = get_fimath();
 
-    indexList = fi(zeros(fi_toint(maxNumOutputs),1), 0, 20, 0, fm);    
+    indexList = fi(zeros(fi_toint(maxNumOutputs),1), 0, 32, 0, fm);    
     powerList = fi(zeros(fi_toint(maxNumOutputs),1), 0, 32, 20, fm);
     listCounter = fi(int32(1), 0, 32, 0, fm);
 
@@ -26,7 +26,7 @@ function [indexList, powerList] = CFARDetectionFP_fixpt(dataCube, ...
         for D_ind = D_limits(1):D_limits(2)
             
             % Determine linear index of CUT
-            linIndex = fi(sub2ind(fi_toint([fi(N_rng, 0, 11, 0, fm), N_dop]), R_ind, D_ind), 0, 21, 0, fm);
+            linIndex = fi(sub2ind(fi_toint([fi(N_rng, 0, 11, 0, fm), N_dop]), R_ind, D_ind), 0, 32, 0, fm);
             
             % Average over power
             threshold = fi(mean(dataCube(linIndex + offsetList)) * threshFactor, 0, 32, 23, fm);
@@ -34,7 +34,7 @@ function [indexList, powerList] = CFARDetectionFP_fixpt(dataCube, ...
             if dataCube(linIndex) > threshold
                 
                 % Add entry to list
-                indexList(listCounter) = fi(linIndex, 0, 20, 0, fm);
+                indexList(listCounter) = fi(linIndex, 0, 32, 0, fm);
                 powerList(listCounter) = fi(dataCube(linIndex), 0, 32, 20, fm);
                 listCounter(:) = listCounter + fi(1, 0, 1, 0, fm);
                 

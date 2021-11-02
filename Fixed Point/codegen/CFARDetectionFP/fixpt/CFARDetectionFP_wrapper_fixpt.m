@@ -6,7 +6,7 @@
 function [indexList,powerList] = CFARDetectionFP_wrapper_fixpt(dataCube,offsetList,maxNumOutputs,threshFactor,N_rng,N_dop,Ntrain_rng,Ntrain_dop,Nguard_rng,Nguard_dop)
     fm = get_fimath();
     dataCube_in = fi( dataCube, 0, 32, 20, fm );
-    offsetList_in = fi( offsetList, 1, 14, 0, fm );
+    offsetList_in = fi( offsetList, 1, 32, 0, fm );
     maxNumOutputs_in = fi( maxNumOutputs, 0, 32, 0, fm );
     threshFactor_in = fi( threshFactor, 0, 32, 28, fm );
     N_rng_in = fi( N_rng, 0, 11, 0, fm );
