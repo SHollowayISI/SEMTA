@@ -8,12 +8,12 @@
     This shell file runs successive scripts and gauges progress.
 
     TODO:
-        - 8-connectivity for centroid algorithm
+        - 8-connectivity algorithm?
         - Asynchronous tracking
+            - Start time jitter
+            - Last frame time flag
             - Live tracking
-            - Post processing tracking
-            - Data fusion
-            - Post processing server changes
+            - 
 %}
 
 %% Housekeeping, Timing, and Path Management

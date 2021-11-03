@@ -63,8 +63,9 @@ if changed_mode
     scenario.flags.mode = new_mode;
     
     % Update variables in radarsetup
-    %PLACEHOLDER: Systematically update variables?
     scenario.radarsetup.int_type = mode_vars.(new_mode).int_type;
     scenario.radarsetup.cpi_fr = mode_vars.(new_mode).num_cpi;
+scenario.radarsetup.frame_time = ...
+    scenario.radarsetup.cpi_time* scenario.radarsetup.cpi_fr;
 end
 

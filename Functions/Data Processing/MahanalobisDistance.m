@@ -1,4 +1,4 @@
-function [dist] = MahanalobisDistance(track, det_list, rs, ts, frame)
+function [dist] = MahanalobisDistance(track, det_list, rs, ts, frame, currentTime)
 %MAHANALOBISDISTANCE Mahanalobis Distance calculation
 %   Calculates statistical distance, weighted by uncertainty for tracking
 
@@ -20,7 +20,7 @@ else
 end
 
 % Calculate time step
-Tm = rs.frame_time;
+Tm = currentTime - track.meas{last_hit_frame}.time;
 
 % % Process covariance matrix (DWNA assumption)
 % Q_1d = [(Tm^4)/4, (Tm^3)/2; ...
@@ -106,7 +106,7 @@ for meas_ind = 1:det_list.num_detect
         Z = [det_list.range(meas_ind); deg2rad(det_list.az(meas_ind)); det_list.vel(meas_ind)];
         Z_res = Z - h;
     else
-        Z = det_list.cart;
+        Z = det_list.cart(:,meas_ind);
         Z_res = Z - (H * X_pre);
     end
     

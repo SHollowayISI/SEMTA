@@ -70,7 +70,7 @@ fading_loss = min(fade.^2);
 % Power loss due to steering angle
 if angleEffects
     loadIn = load([pwd, '\Results\Antenna Loss\ArrayLoss.mat'], 'angles', 'totalLoss');
-    angLossdB = interp1(loadIn.angles, loadIn.totalLoss, abs(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit)), 'nearest');
+    angLossdB = interp1(loadIn.angles, loadIn.totalLoss, abs(scenario.multi.steering_angle{scenario.flags.unit}(scenario.flags.frame)), 'nearest');
     ang_loss = db2pow(-angLossdB);
 else
     ang_loss = 1;

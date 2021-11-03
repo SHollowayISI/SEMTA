@@ -8,7 +8,6 @@ function [scenario] = Tracking_SingleUnit(scenario)
 % Flags
 frame = scenario.flags.frame;
 unit = scenario.flags.unit;
-currentTime = scenario.flags.frameMidTime;
 
 % Structs
 multi = scenario.multi;
@@ -75,7 +74,7 @@ end
 
 % Update Kalman tracking filter
 if track.isActive
-    track = KalmanFilter_SingleUnit(track, rs, ts, frame, currentTime, 'forward');
+    track = KalmanFilter_SingleUnit(track, rs, ts, frame, 'forward');
 end
 
 %% Pack Variables
@@ -89,7 +88,6 @@ function [track] = addMiss(track)
     
     % Increase misses
     track.misses = track.misses + 1;
-    track.hit_list(frame) = false;
     
     % Inactivate track if misses exceed maximum
     if track.isActive && (track.misses > ts.miss_max)
@@ -97,7 +95,7 @@ function [track] = addMiss(track)
     end
     
     % Add blank measurement
-    track.meas{frame} = {};
+    track.meas{frame} = struct('time', flags.;
 end
 
 % Convert detection list index to measurement structure
@@ -121,13 +119,13 @@ function [hitFound, meas] = targetToTrack(track, det_list)
     isValid = true(det_list.num_detect, 1);
     
     % Coarse gating
-    delta_range = abs(det_list.range - track.estimate{frame-1}.range)';
-    max_delta = (det_list.time - track.estimate{frame-1}.time) * ts.max_vel;
+    delta_range = abs(det_list.range - track.estimate{frame-1}.range);
+    max_delta = (det_list.time - track.meas{frame-1}.time) * ts.max_vel;
     isValid = isValid & (delta_range < max_delta);
     
     % Fine gating using statistically weighted distance
-    dist = MahanalobisDistance(track, det_list, rs, ts, frame, currentTime);
-    isValid = isValid & (dist < ts.dist_thresh);
+    dist = MahanalobisDistance(track, det_list, rs, ts, frame);
+    isValid = isValid & (dist < ts.dist_thresh)';
     
     % Check if any detections are valid
     if ~any(isValid)
@@ -155,7 +153,7 @@ end
 function [nextRange] = predictRange(track)
     
     % Calculate next range prediction
-    Tm = (currentTime - track.meas{frame-1}.time);
+    Tm = (track.meas{frame}.time - track.meas{frame-1}.time);
     X = track.estimate{frame-1}.state;
     nextRange = sqrt((X(1) + Tm*X(2))^2 + (X(4) + Tm*X(5))^2);
 end

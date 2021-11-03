@@ -1,4 +1,4 @@
-function [track] = KalmanFilter_SingleUnit(track, rs, ts, frame, passDirection)
+function [track] = KalmanFilter_SingleUnit(track, rs, ts, frame, currentTime, passDirection)
 %KALMANFILTER_SINGLEUNIT Kalman tracking filter for single unit tracking.
 %   Takes as input track data structure, radarsetup,
 %   radarsetup.tracking_single, and frame number.
@@ -47,7 +47,7 @@ else
     
     % Calculate timestep since previous hit
     last_hit_frame = hit_ind(end);
-    Tm = rs.frame_time * (frame - last_hit_frame);
+    Tm = currentTime - track.meas{last_hit_frame}.time;
     
 end
 
@@ -182,6 +182,9 @@ track = saveStepData(track, frame, X_est, P_est, X_pre, P_pre);
 
 % Function to save estimated and predicted data
 function [track] = saveStepData(track, frame, X_est, P_est, X_pre, P_pre)
+    
+    % Save timestamp
+    track.estimate{frame}.time = currentTime;
     
     % Save estimates
     track.estimate{frame}.state = X_est;

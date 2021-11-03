@@ -55,7 +55,7 @@ scenario.traj = struct( ...
     'vel_st',   [100; 0; 0], ...          % Velocity input if 'static' is used
     ...
     ... % Model options
-    'model',    'linear');              % Set 'static', 'model', 'linear', or 'model_constant'
+    'model',    'model');              % Set 'static', 'model', 'linear', or 'model_constant'
 
 % Run Trajectory model
 scenario.traj = TrajectoryModel(scenario.traj);

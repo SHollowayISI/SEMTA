@@ -14,9 +14,8 @@ classdef RadarScenario < handle
         rx_sig
         cube
         detection
-        flags
+        flags = struct('frame', 0);
         timing
-        results
     end
     
     methods
@@ -344,20 +343,22 @@ classdef RadarScenario < handle
             figure('Name', 'Single Unit Tracking Results');
             
             % Collect tracking data from each unit and frame
-            meas_coords = nan(2, rs.multi.n_fr, rs.multi.n_re);
-            est_coords = meas_coords;
             for unit = unitsToPlot
-                for frame = 1:rs.multi.n_fr
+                
+                meas_coords = nan(2, rs.multi.num_fr(unit));
+                est_coords = meas_coords;
+                
+                for frame = 1:rs.multi.num_fr(unit)
                     if rs.tracking_single{unit}.hit_list(frame)
-                        meas_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
-                        est_coords(:,frame,unit) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.estimate{frame}.cart;
+                        meas_coords(:,frame) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.meas{frame}.cart;
+                        est_coords(:,frame) = rs.multi.radar_pos(1:2,unit) + rs.tracking_single{unit}.estimate{frame}.cart;
                     end
                 end
     
                 % Plot results
-                scatter(meas_coords(2,:,unit), meas_coords(1,:,unit), 'b');
+                scatter(meas_coords(2,:), meas_coords(1,:), 'b');
                 hold on;
-                plot(est_coords(2,:,unit), est_coords(1,:,unit), 'r');
+                plot(est_coords(2,:), est_coords(1,:), 'r');
                 hold on;
                 if showRadar
                     scatter(rs.multi.radar_pos(2,unit), rs.multi.radar_pos(1,unit), 'r', '.')
@@ -433,44 +434,42 @@ classdef RadarScenario < handle
             end
         end
         
-        function storeMulti(RadarScenario)
+        function storeMulti(rs)
             
-            %TODO: REVISE
-            %PLACEHOLDER: Store infromation of multiple targets
+            % Store infromation of multiple targets
             % Save whether a target was detected
-            RadarScenario.multi.detect( ...
-                RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                RadarScenario.detection.detect_logical;
+            rs.multi.detect{rs.flags.unit}(rs.flags.frame) = ...
+                rs.detection.detect_logical;
             
             % Save radar mode
-            RadarScenario.multi.mode{ ...
-                RadarScenario.flags.frame, RadarScenario.flags.unit} = ...
-                RadarScenario.flags.mode;
+            rs.multi.mode{rs.flags.unit}{rs.flags.frame} = ...
+                rs.flags.mode;
+            
+            % Save elapsed frames
+            rs.multi.num_fr(rs.flags.unit) = rs.flags.frame;
             
             % If target is detected, save range and velocity to target
-            if RadarScenario.detection.detect_logical
+            if rs.detection.detect_logical
                 
                 % Save target range
-                RadarScenario.multi.ranges( ...
-                    RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                    RadarScenario.detection.detect_list.range(end);
+                rs.multi.ranges{rs.flags.unit}(rs.flags.frame) = ...
+                    rs.detection.detect_list.range(end);
                 
                 % Save target velocity
-                RadarScenario.multi.vels( ...
-                    RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                    RadarScenario.detection.detect_list.vel(end);
+                rs.multi.vels{rs.flags.unit}(rs.flags.frame) = ...
+                    rs.detection.detect_list.vel(end);
                 
                 % Save target angle of arrival
-                RadarScenario.multi.aoa( ...
-                    RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                    RadarScenario.detection.detect_list.az(end);
+                rs.multi.aoa{rs.flags.unit}(rs.flags.frame) = ...
+                    rs.detection.detect_list.az(end);
                 
                 % Save target SNR
-                RadarScenario.multi.SNR( ...
-                    RadarScenario.flags.frame, RadarScenario.flags.unit) = ...
-                    RadarScenario.detection.detect_list.SNR(end);
+                rs.multi.SNR{rs.flags.unit}(rs.flags.frame) = ...
+                    rs.detection.detect_list.SNR(end);
                 
-                
+                % Save timestamp
+                rs.multi.time{rs.flags.unit}(rs.flags.frame) = ...
+                    rs.detection.detect_list.time;
             end
         end
         
@@ -478,15 +477,33 @@ classdef RadarScenario < handle
             % Reset mode flag and initial angle
             rs.flags.mode = rs.radarsetup.initial_mode;
             rs.radarsetup.int_type = rs.radarsetup.modes.(rs.radarsetup.initial_mode).int_type;
+            rs.flags.frame = 0;
+        end
+        
+        function simTimeStart(rs)
+            
+            % Set beginning, middle, and end frame time
+            rs.flags.frameStartTime = rs.multi.start_time(rs.flags.unit);
+            rs.flags.frameMidTime = rs.flags.frameStartTime + rs.radarsetup.frame_time/2;
+            rs.flags.frameEndTime = rs.flags.frameStartTime + rs.radarsetup.frame_time;
+        end
+        
+        function simTimeUpdate(rs)
+            
+            % Updates beginning, middle, and end frame time
+            rs.flags.frameStartTime = rs.flags.frameEndTime;
+            rs.flags.frameMidTime = rs.flags.frameStartTime + rs.radarsetup.frame_time/2;
+            rs.flags.frameEndTime = rs.flags.frameStartTime + rs.radarsetup.frame_time;
         end
         
         function frameUpdate(rs, repetition)
             % Repetition value defines how often to send out update
             
             if mod(rs.flags.frame, repetition) == 0
-                fprintf('Frame %d of %d complete.\n\n', ...
-                    rs.flags.frame, ...
-                    rs.multi.n_fr);
+                fprintf('Frame %d complete.\n', ...
+                    rs.flags.frame);
+                fprintf('%dms of %dms of simulation time complete.\n\n', ...
+                    floor(1000*min(rs.flags.frameEndTime,rs.multi.sim_time)), 1000*rs.multi.sim_time);
             end
             
         end
@@ -508,46 +525,43 @@ classdef RadarScenario < handle
             
             % Initialize container for multistatic information
             rs.multi.ranges = ...
-                nan(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.vels = ...
-                nan(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.detect = ...
-                false(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.SNR = ...
-                nan(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.steering_angle = ...
-                nan(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.aoa = ...
-                nan(rs.multi.n_fr, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
             rs.multi.mode = ...
-                {nan(rs.multi.n_fr, rs.multi.n_re)};
+                cell(rs.multi.n_re,1);
             rs.tracking_single = ...
-                cell(1, rs.multi.n_re);
+                cell(rs.multi.n_re,1);
+            rs.multi.num_fr = zeros(rs.multi.n_re, 1);
             
         end
         
-        function timeStart(rs)
+        function startProgressTimer(rs)
             
             rs.timing.timing_logical = true;
             rs.timing.startTime = tic;
             rs.timing.TimeDate = now;
-            rs.timing.numLoops = ...
-                rs.multi.n_fr * ...
-                rs.multi.n_re;
             rs.timing.timeGate = 0;
             
         end
         
-        function timeUpdate(rs, repetition, rep_method)
+        function updateProgressTimer(rs, repetition, rep_method)
             
             if ~rs.timing.timing_logical
                 error('Must use method timeStart() before timeUpdate()');
             end
             
             % Calculate progress through simulation
-            loops_complete = rs.multi.n_fr * (rs.flags.unit-1) + ...
-                rs.flags.frame;
-            percent_complete = 100*loops_complete/rs.timing.numLoops;
+            units_complete = rs.flags.unit-1 + rs.flags.frameEndTime/rs.multi.sim_time;
+            percent_complete = min(100*units_complete /rs.multi.n_re,100);
             
             % Calculate remaining time in simulation
             nowTimeDate = now;
@@ -561,7 +575,7 @@ classdef RadarScenario < handle
             % Display current progress
             switch rep_method
                 case 'frames'
-                    if mod(loops_complete, repetition) == 1
+                    if mod(rs.flags.frame, repetition) == 1
                         disp('');
                         disp(message_p);
                         disp(message_t);

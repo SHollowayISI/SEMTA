@@ -28,7 +28,7 @@ n_samples = radarsetup.f_s*pri;
 rx_sig = zeros(n_samples, radarsetup.n_p*radarsetup.cpi_fr, 2);
 
 % Set up start time
-t_st = radarsetup.frame_time * (flags.frame - 1);
+t_st = flags.frameStartTime;
     
 % Set radar position and velocity
 tx_pos = multi.radar_pos(:,flags.unit);
@@ -46,7 +46,7 @@ tx_sig = sim.waveform();
 [tx_sig,tx_status] = sim.transmitter(tx_sig);
 
 % Calculate initial steering angle
-st_ang = multi.steering_angle(flags.frame, flags.unit);
+st_ang = multi.steering_angle{flags.unit}(flags.frame);
 
 % Calculate steering vectors
 Tx_steer = steervec(getElementPosition(sim.sub_array)/lambda, ...

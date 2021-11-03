@@ -34,7 +34,7 @@ switch mode
             angle_out = rs.modes.search.init_angle;
         else
             % Unpack variables
-            last_angle = scenario.multi.steering_angle(frame-1, unit);
+            last_angle = scenario.multi.steering_angle{unit}(frame-1);
             step_angle = rs.modes.search.search_step;
             max_angle = rs.modes.search.search_max;
             

@@ -15,7 +15,7 @@
 %% Main Loop
 
 % Start timing for estimation
-timeStart(scenario);
+startProgressTimer(scenario);
 
 % Loop through radar units
 for unit = 1:scenario.multi.n_re
@@ -23,16 +23,19 @@ for unit = 1:scenario.multi.n_re
     % Set current unit flag
     scenario.flags.unit = unit;
     
-    % Loop through simulation frames
-    for frame = 1:scenario.multi.n_fr
+    % Set simulation times
+    simTimeStart(scenario);
+    
+    % Loop until simulation time is surpassed
+    while scenario.flags.frameStartTime < scenario.multi.sim_time
         
         % Set current frame flag
-        scenario.flags.frame = frame;
+        scenario.flags.frame = scenario.flags.frame + 1;
         
         %% Beam Steering Setup
         
         % Set beam steering direction
-        scenario.multi.steering_angle(frame, unit) = BeamsteeringUpdate(scenario, true);
+        scenario.multi.steering_angle{unit}(end+1) = BeamsteeringUpdate(scenario, true);
         
         %% Radar Simulation (Single frame)
         
@@ -58,6 +61,9 @@ for unit = 1:scenario.multi.n_re
         % Check for mode changes
         scenario = ModeCheck(scenario, true);
         
+        % Update timing information
+        simTimeUpdate(scenario);
+        
         %% Read Out Progress
         
         % Read out target information
@@ -67,14 +73,14 @@ for unit = 1:scenario.multi.n_re
         frameUpdate(scenario, 1);
         
         % Estimate remaining time in simulation
-        timeUpdate(scenario, 5, 'frames');
+        updateProgressTimer(scenario, 5, 'frames');
         
     end
     
     % Post-process tracking
-    if scenario.radarsetup.tracking_single.bi_single
-        scenario = Tracking_SingleUnit_Bidirectional(scenario);
-    end
+%     if scenario.radarsetup.tracking_single.bi_single
+%         scenario = Tracking_SingleUnit_Bidirectional(scenario);
+%     end
     
     % Reset parameters for new unit
     unitReset(scenario);

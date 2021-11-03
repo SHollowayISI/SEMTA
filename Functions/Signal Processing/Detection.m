@@ -7,6 +7,8 @@ function [detection] = Detection(scenario)
 
 radarsetup = scenario.radarsetup;
 cube = scenario.cube;
+flags = scenario.flags;
+multi = scenario.multi;
 
 %% Perform Detection
 
@@ -318,6 +320,7 @@ end
 %% Estimate Target Coordinates
 
 % Generate list of detection coordinates
+detection.detect_list.time = flags.frameMidTime;
 detection.detect_list.range = [];
 detection.detect_list.vel = [];
 detection.detect_list.az = [];
@@ -343,14 +346,14 @@ for n = 1:length(regions)
     end
     
     % Estimate angle-of-arrival using amplitude comparison monopulse
-    monopulse_aoa = (cosd(scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit))^-2) * ...
+    monopulse_aoa = (cosd(multi.steering_angle{flags.unit}(flags.frame))^-2) * ...
         regions(n).weightedCentroid(3) * radarsetup.beamwidth / radarsetup.mono_coeff;
     detection.detect_list.az(end+1) = monopulse_aoa ...
-        + scenario.multi.steering_angle(scenario.flags.frame, scenario.flags.unit);
+        + multi.steering_angle{flags.unit}(flags.frame);
     
     % Calculate range estimate and correction
     if radarsetup.range_off
-        nearest = scenario.cube.range_res * floor(rangeMeas / scenario.cube.range_res);
+        nearest = cube.range_res * floor(rangeMeas / cube.range_res);
         resid = rangeMeas - nearest;
         offset = interp1(offsetAxis, offsetCurve, resid, 'linear', 'extrap');
         rangeCalc = nearest + offset;
