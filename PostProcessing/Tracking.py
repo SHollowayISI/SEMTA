@@ -18,29 +18,15 @@ import csv
 def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
 
     # Unpack variables
-    numFr = trackParams['numFr']
+    numFr = trackSingleIn['n_fr']
 
     # Unpack measurement values
     meas = dict()
     for key in trackSingleIn['meas'].keys():
         meas[key] = trackSingleIn['meas'][key][frame]
-    
-    # Determine previous successful measurement
-    if passDirection == 'forward':
-        if frame > 0:
-            hit_ind = np.argwhere(trackSingleIn['hit_list'][:frame])
-            hit_ind = hit_ind[np.where((frame - hit_ind) <= (trackParams['miss_max']+1))]
-        else:
-            hit_ind = np.matrix([])
-    elif passDirection == 'reverse':
-        if frame < numFr-1:
-            hit_ind = np.flip(frame + np.argwhere(trackSingleIn['hit_list'][(frame+1):]) + 1)
-            hit_ind = hit_ind[np.where((hit_ind - frame) <= (trackParams['miss_max']+1))]
-        else:
-            hit_ind = np.matrix([])
 
     # Check if track needs to be initialized
-    if hit_ind.size == 0:
+    if (passDirection == 'forward' and frame == 0) or (passDirection == 'reverse' and frame == numFr-1):
 
         # Use measurement as state prediction
         X_init = np.matrix([[
@@ -56,13 +42,16 @@ def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
         P_init = GenerateStateCovariance(meas, trackParams)
 
         # Save results
-        return SaveStepData(trackSingleIn, frame, X_init, P_init, X_init, P_init)
+        return SaveStepData(trackSingleIn, frame, X_init, P_init, X_init, P_init, meas['time'])
 
     else:
 
         # Calculate time step since previous hit
-        lastHitFrame = hit_ind[-1]
-        Tm = trackParams['frame_time'] * (frame - lastHitFrame)
+        if passDirection == 'forward':
+            lastHitFrame = frame-1
+        else:
+            lastHitFrame = frame+1
+        Tm = trackSingleIn['meas']['time'][frame] - trackSingleIn['meas']['time'][lastHitFrame]
 
 
     ## Calculate Model Matrices
@@ -105,9 +94,6 @@ def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
     # Predicted kinematic covariance
     P_pre = (F * (np.asmatrix(trackSingleIn['estimate'][lastHitFrame]['covar'])* F.T)) + Q
 
-    # Save prediction as estimate if measurement not taken
-    if not trackSingleIn['hit_list'][frame]:
-        return SaveStepData(trackSingleIn, frame, X_pre, P_pre, X_pre, P_pre)
 
     ## Calculate measurement matrices
 
@@ -139,10 +125,10 @@ def KalmanFilterSingle(trackSingleIn, trackParams, frame, passDirection):
     P_est = P_pre - (K * (H * P_pre))
 
     # Save data
-    return SaveStepData(trackSingleIn, frame, X_est, P_est, X_pre, P_pre)
+    return SaveStepData(trackSingleIn, frame, X_est, P_est, X_pre, P_pre, meas['time'])
 
 # Save data for each Kalman filter step
-def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre):
+def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre, time):
 
     # Save estimates
     trackIn['estimate'][frame] = dict(
@@ -151,7 +137,8 @@ def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre):
         cart    = [X_est[i] for i in [0, 3]],
         az      = np.arctan(X_est[3] / X_est[0]) * 180 / np.pi,
         range   = np.linalg.norm([X_est[i] for i in [0, 3]]),
-        speed   = np.linalg.norm([X_est[i] for i in [1, 4]])
+        speed   = np.linalg.norm([X_est[i] for i in [1, 4]]),
+        time    = time
     )
 
     # Save predictions
@@ -161,7 +148,8 @@ def SaveStepData(trackIn, frame, X_est, P_est, X_pre, P_pre):
         cart    = [X_pre[i] for i in [0, 3]],
         az      = np.arctan(X_pre[3] / X_pre[0]) * 180 / np.pi,
         range   = np.linalg.norm([X_pre[i] for i in [0, 3]]),
-        speed   = np.linalg.norm([X_pre[i] for i in [1, 4]])
+        speed   = np.linalg.norm([X_pre[i] for i in [1, 4]]),
+        time    = time
     )
 
     # Return data structure
@@ -249,13 +237,11 @@ def CalculateVariance(meas):
 def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
     
     # Unpack variables
-    numFr = trackParams['numFr']
+    numFr = trackSingleIn['n_fr']
 
     # Set up output data structure
     trackOut = dict(
-        isActive    = False,
-        misses      = 0,
-        hit_list    = [bool(el) for el in trackSingleIn['hit_list'].tolist()],
+        n_fr        = numFr,
         meas        = trackSingleIn['meas'],
         estimate    = [None]*numFr,
         prediction  = [None]*numFr
@@ -269,23 +255,7 @@ def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
 
     # Loop through frames
     for fr in frList:
-
-        # Check for detection
-        if trackOut['hit_list'][fr]:
-
-            # Set flags
-            trackOut['isActive'] = True
-            trackOut['misses'] = 0
-
-        else:
-
-            # Set flags
-            trackOut['misses'] += 1
-            trackOut['isActive'] &= (trackOut['misses'] < trackParams['miss_max'])
-        
-        # Perform track filtering
-        if trackOut['isActive']:
-            trackOut = KalmanFilterSingle(trackOut, trackParams, fr, passDirection)
+        trackOut = KalmanFilterSingle(trackOut, trackParams, fr, passDirection)
 
     # Return data object
     return trackOut
@@ -294,7 +264,7 @@ def TrackingSingleUnit(trackSingleIn, trackParams, passDirection):
 def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
 
     # Unpack variables
-    numFr = trackParams['numFr']
+    numFr = trackSingleIn['n_fr']
 
     # Set up output data structure
     trackEstimate = [None]*numFr
@@ -302,43 +272,42 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
     # Run forward and backward passes
     trackForward = TrackingSingleUnit(trackSingleIn, trackParams, 'forward')
     trackReverse = TrackingSingleUnit(trackSingleIn, trackParams, 'reverse')
-    hit_list = [f | r for f, r in zip(trackForward['hit_list'], trackReverse['hit_list'])]
 
     # Fuse data for each frame
     for fr in range(numFr):
 
-        if hit_list[fr] and trackForward['estimate'][fr] is not None:
+        # Unpack structures
+        estF = trackForward['estimate'][fr]
+        estR = trackReverse['estimate'][fr]
 
-            # Unpack structures
-            estF = trackForward['estimate'][fr]
-            estR = trackReverse['estimate'][fr]
+        # Perform inverse variance weighting
+        varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
+        stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
 
-            # Perform inverse variance weighting
-            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
-            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
+        varNew = np.diag((1 / varSum.T).tolist()[0])
+        stateNew = stateSum / varSum
 
-            varNew = np.diag((1 / varSum.T).tolist()[0])
-            stateNew = stateSum / varSum
-
-            # Save data back to struct
-            trackEstimate[fr] = dict(
-                state = stateNew,
-                covar = varNew,
-                cart = [stateNew[i] for i in [0, 3]],
-                az = np.arctan(stateNew[3] / stateNew[0]) * 180 / np.pi,
-                range = np.linalg.norm([stateNew[i] for i in [0, 3]]),
-                speed = np.linalg.norm([stateNew[i] for i in [1, 4]])
-            )
+        # Save data back to struct
+        trackEstimate[fr] = dict(
+            state = stateNew,
+            covar = varNew,
+            cart = [stateNew[i] for i in [0, 3]],
+            az = np.arctan(stateNew[3] / stateNew[0]) * 180 / np.pi,
+            range = np.linalg.norm([stateNew[i] for i in [0, 3]]),
+            speed = np.linalg.norm([stateNew[i] for i in [1, 4]])
+        )
             
     # Return data structure
     return trackEstimate
 
 # Multi unit data fusion
-def DataFusion(trackSingleIn, trackParams, radarPos):
+def DataFusion(trackSingleIn, trackParams):
 
     # Unpack variables
-    numFr = trackParams['numFr']
-    numRx = trackParams['numRx']
+    numRx = len(trackSingleIn)
+    numFr = 0
+    for unitData in trackSingleIn:
+        numFr = numFr + unitData['n_fr']
 
     # Set up data structure
     trackingMulti = dict(
@@ -608,7 +577,7 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
 
 ### Main ###
 
-def ProcessFile(filename):
+def ProcessFiles(foldername):
 
     # Set tracking parameters
     trackParams = dict(
@@ -618,46 +587,48 @@ def ProcessFile(filename):
         miss_max = 5,
         sigma_v = (0.09, 0),
         bi_multi = True,
-        bi_single = True,
-        limitSensorFusion = True,
-        frame_time = 0.0512,
-        numFR = None,
-        numRx = None
+        bi_single = True
     )
+
 
     ### Read input data ###
 
+    # Discover files in directory 
+    dataIn = []
+    for filename in os.listdir(foldername):
+        fullFilename = os.path.join(foldername, filename)
+        mat = sio.loadmat(fullFilename)
+        dataIn.append(mat['track_out'][0][0])
+    numFiles = len(dataIn)
+
     # Unpack .mat file
-    mat = sio.loadmat(filename)
-    matKeys = {'hit_list', 'range', 'vel', 'SNR', 'az', 'steer'}
-    trackData = dict()
+    matKeys = {'range', 'vel', 'SNR', 'az', 'steer', 'radar_pos', 'time', 'n_fr'}
+    trackData = [dict()]*numFiles
 
     # Set up new data structure
-    for key in matKeys:
-        trackData[key] = mat['track_out'][0][0][key]
-    radarPos = mat['track_out'][0][0]['radar_pos']
+    for idx, unitData in enumerate(dataIn):
+        for key in matKeys:
+            trackData[idx][key] = unitData[key]
 
-    # Determine global parameters
-    trackParams['numRx'] = numRx = trackData['hit_list'].shape[0]
-    trackParams['numFr'] = numFr = trackData['hit_list'].shape[1]
 
 
     ### Single unit tracking ###
 
     # Set up data structure
-    trackSingle = [None]*numRx
+    trackSingle = [None]*numFiles
 
     # Loop through receivers
-    for rx in range(numRx):
+    for rx in range(numFiles):
 
         # Set up data structures
         meas = dict()
         for key in matKeys:
-            if key != 'hit_list':
-                meas[key] = trackData[key][rx]
+            if key != 'n_fr' and key != 'radar_pos':
+                meas[key] = np.array([val[0] for val in trackData[rx][key]])
 
         trackSingle[rx] = dict(
-            hit_list = trackData['hit_list'][rx],
+            radar_pos = trackData[rx]['radar_pos'],
+            n_fr = trackData[rx]['n_fr'][0][0],
             meas = meas,
             estimate = [])
         
@@ -669,7 +640,9 @@ def ProcessFile(filename):
     ### Multistatic processing ###
 
     # Run data fusion
-    trackingMulti = DataFusion(trackSingle, trackParams, radarPos)
+    trackingMulti = DataFusion(trackSingle, trackParams)
+
+    return
 
     # Multistatic tracking
     trackingMulti = TrackingMultiBidirectional(trackingMulti, trackParams)
@@ -751,3 +724,6 @@ def ProcessFile(filename):
             plt.ylim(ylims)
             plt.savefig(saveFolder + '/single' + str(rx+1) + '.png')
             plt.close()
+
+if __name__ == '__main__':
+    ProcessFiles('/home/sholloway/Documents/GitHub/SEMTA/PostProcessing/Input/AsyncTracking')

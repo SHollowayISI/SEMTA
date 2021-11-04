@@ -7,11 +7,13 @@ import traceback
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Setting variables
-uploadFolder = dir_path + '\Input'
+uploadFolder = os.path.join(dir_path, 'Input')
 
 # Create directory if nonexistent
 if not os.path.exists(uploadFolder):
     os.makedirs(uploadFolder)
+
+print(uploadFolder)
 
 # Set up flask server
 app = Flask(__name__)
@@ -40,10 +42,24 @@ def uploadFile():
         if file.filename == '':
             return 'ERROR: No file attached.', 400
 
+        print(request.form.keys())
+
+        # Check if test ID is included in form
+        if 'test_id' not in request.form:
+            return 'ERROR: Test identifier not specified', 400
+
+        # Get test ID
+        testID = request.form['test_id']
+
         # Check for file overwrite
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        folderpath = os.path.join(app.config['UPLOAD_FOLDER'], str(testID))
+        filepath = os.path.join(folderpath, file.filename)
         if os.path.exists(filepath):
             return 'ERROR: File already exists with that name.', 403
+
+        # Chcek if directory exists for test ID, and create if not
+        if not os.path.exists(folderpath):
+            os.makedirs(folderpath)
 
         # Otherwise save to file
         file.save(filepath)
