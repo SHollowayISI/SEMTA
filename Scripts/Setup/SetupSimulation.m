@@ -25,14 +25,14 @@ scenario.simsetup = struct( ...
     'attach_zip',   false, ...
     'alert_address', 'hollowayseanm@gmail.com', ...
     ...                                         % Email address for status updates
-    'par_cfar',     false, ...                   % Use parallel processing for CFAR T/F
-    'filename',     'TrackingTestInitial', ...  % Filename to save data as
+    'par_cfar',     false, ...                  % Use parallel processing for CFAR T/F
+    'filename',     'AsyncTracking', ...        % Filename to save data as
     'save_format',  save_format, ...            % File types to save figures
     'save_figs',    false, ...                  % Save figures T/F
     'save_mat',     false, ...                  % Save mat file T/F
     'reduce_mat',   false, ...                  % Reduce mat file for saving
-    'save_track',   false);                      % Save tracking T/F
-
+    'save_track',   false, ...                  % Save tracking T/F
+    'save_track_single',    true);              % Svae single unit tracking T/F
 
 
 %% Start Parallel Pool

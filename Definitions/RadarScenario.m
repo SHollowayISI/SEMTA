@@ -371,6 +371,10 @@ classdef RadarScenario < handle
             ylabel('Cross-Track Position [m]', 'FontWeight', 'bold');
             
             % Adjust plot
+            ax = gca;
+            midLim = mean(ax.YLim);
+            diffLim = diff(ax.XLim)/2;
+            ylim(midLim + diffLim*[-1, 1]);
             grid on;
             pbaspect([1 1 1]);
         end
@@ -386,11 +390,9 @@ classdef RadarScenario < handle
             figure('Name', 'Tracking Results');
             
             % Collect tracking data from each unit and frame
-            est_coords = nan(2, rs.multi.n_fr);
-            for frame = 1:rs.multi.n_fr
-                if rs.tracking_multi.hit_list(frame)
-                    est_coords(:,frame) = rs.tracking_multi.track_estimate{frame}.pos;
-                end
+            est_coords = nan(2, rs.tracking_multi.num_fr);
+            for frame = 1:rs.tracking_multi.num_fr
+                est_coords(:,frame) = rs.tracking_multi.track_estimate{frame}.pos;
             end
             
             % Plot results
@@ -406,6 +408,10 @@ classdef RadarScenario < handle
             ylabel('Cross-Track Position [m]', 'FontWeight', 'bold');
             
             % Adjust plot
+            ax = gca;
+            midLim = mean(ax.YLim);
+            diffLim = diff(ax.XLim)/2;
+            ylim(midLim + diffLim*[-1, 1]);
             grid on;
             pbaspect([1 1 1]);
         end
@@ -503,7 +509,7 @@ classdef RadarScenario < handle
                 fprintf('Frame %d complete.\n', ...
                     rs.flags.frame);
                 fprintf('%dms of %dms of simulation time complete.\n\n', ...
-                    floor(1000*min(rs.flags.frameEndTime,rs.multi.sim_time)), 1000*rs.multi.sim_time);
+                    floor(1000*min(rs.flags.frameStartTime,rs.multi.sim_time)), 1000*rs.multi.sim_time);
             end
             
         end
@@ -560,7 +566,7 @@ classdef RadarScenario < handle
             end
             
             % Calculate progress through simulation
-            units_complete = rs.flags.unit-1 + rs.flags.frameEndTime/rs.multi.sim_time;
+            units_complete = rs.flags.unit-1 + min(1,rs.flags.frameStartTime/rs.multi.sim_time);
             percent_complete = min(100*units_complete /rs.multi.n_re,100);
             
             % Calculate remaining time in simulation

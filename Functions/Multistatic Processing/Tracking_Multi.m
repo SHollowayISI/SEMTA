@@ -11,18 +11,18 @@ rs = scenario.radarsetup;
 tsm = rs.tracking_single;
 
 % Set up new structs
-tracking_multi.track_estimate = cell(multi.n_fr, 1);
-tracking_multi.track_prediction = cell(multi.n_fr, 1);
-tracking_multi.hit_list_out = true(multi.n_fr, 1);
+tracking_multi.track_estimate = cell(tracking_multi.num_fr, 1);
+tracking_multi.track_prediction = cell(tracking_multi.num_fr, 1);
+tracking_multi.hit_list_out = true(tracking_multi.num_fr, 1);
 
 
 %% Target Tracking
 
 % Determine pass direction
 if strcmp(passDirection, 'forward')
-    fr_ind = 1:multi.n_fr;
+    fr_ind = 1:tracking_multi.num_fr;
 elseif strcmp(passDirection, 'reverse')
-    fr_ind = multi.n_fr:-1:1;
+    fr_ind = tracking_multi.num_fr:-1:1;
 end
 
 % Loop through frames
@@ -30,37 +30,28 @@ for fr = fr_ind
     
     % Determine previous successful measurement
     if strcmp(passDirection, 'forward')
-        hit_ind = find(tracking_multi.hit_list(1:(fr-1)));
+        hit_ind = 1:(fr-1);
     elseif strcmp(passDirection, 'reverse')
-        hit_ind = multi.n_fr + 1 - find(tracking_multi.hit_list(end:-1:(fr+1)));
+        hit_ind = tracking_multi.num_fr:-1:(fr+1);
     end
     
     % If no track has been established
     if isempty(hit_ind)
+            
+        % Use measurement as state prediction
+        X_init = tracking_multi.state{fr};
+        P_init = tracking_multi.var{fr};
         
-        % Save measurement if taken
-        if tracking_multi.hit_list(fr)
-            
-            % Use measurement as state prediction
-            X_init = tracking_multi.state{fr};
-            P_init = tracking_multi.var{fr};
-            
-            % Save results
-            tracking_multi = ...
-                saveStepData(tracking_multi, fr, X_init, P_init, X_init, P_init);
-        else
-            
-            % Set output hit list
-            tracking_multi.hit_list_out(fr) = false;
-            
-        end
+        % Save results
+        tracking_multi = ...
+            saveStepData(tracking_multi, fr, X_init, P_init, X_init, P_init);
             
         
     else
         
         % Calculate timestep since previous hit
         last_fr = hit_ind(end);
-        Tm = rs.frame_time * (fr - last_fr);
+        Tm = tracking_multi.time(fr) - tracking_multi.time(last_fr);
         
         %% Kalman Filter Setup
         
@@ -99,13 +90,6 @@ for fr = fr_ind
         
         % Predicted kinematic covariance
         P_pre = F * (tracking_multi.track_estimate{last_fr}.covar * F') + Q;
-        
-        % Save prediction as estimate if measurement not taken
-        if ~tracking_multi.hit_list(fr)
-            tracking_multi = ...
-                saveStepData(tracking_multi, fr, X_pre, P_pre, X_pre, P_pre);
-            continue;
-        end
         
         %% Calculate Measurement Variables
         

@@ -8,7 +8,7 @@ function [tracking_multi] = Tracking_Multi_Bidirectional(scenario)
 tracking_multi = scenario.tracking_multi;
 
 % Prepare new variables
-tracking_multi.track_estimate = cell(scenario.multi.n_fr, 1);
+tracking_multi.track_estimate = cell(tracking_multi.num_fr, 1);
 
 %% Run each pass of tracking
 
@@ -18,7 +18,7 @@ combined_hit_list = track_forward.hit_list_out & track_reverse.hit_list_out;
 
 %% Perform data fusion
 
-for fr = 1:scenario.multi.n_fr
+for fr = 1:tracking_multi.num_fr
     
     % Unpack structures
     est_f = track_forward.track_estimate{fr};

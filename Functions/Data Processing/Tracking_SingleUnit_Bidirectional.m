@@ -10,7 +10,7 @@ unit = scenario.flags.unit;
 track = scenario.tracking_single{unit};
 
 % Prepare new variables
-track.estimate = cell(scenario.multi.n_fr, 1);
+track.estimate = cell(scenario.multi.num_fr(scenario.flags.unit), 1);
 
 %% Run each pass of tracking
 
@@ -20,7 +20,7 @@ hit_list = track_forward.hit_list | track_reverse.hit_list;
 
 %% Perform data fusion
 
-for fr = 1:scenario.multi.n_fr
+for fr = 1:scenario.multi.num_fr(scenario.flags.unit)
     
     if hit_list(fr)
         
@@ -41,6 +41,7 @@ for fr = 1:scenario.multi.n_fr
         track.estimate{fr}.az = atand(state_new(4) / state_new(1));
         track.estimate{fr}.range = sqrt(sum(state_new([1 4]).^2));
         track.estimate{fr}.speed = sqrt(sum(state_new([2 5]).^2));
+        track.estimate{fr}.time = scenario.multi.time{unit}(fr);
         
     end
     

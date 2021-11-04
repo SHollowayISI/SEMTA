@@ -52,7 +52,7 @@ scenario.radarsetup = struct( ...
 tracking = struct( ...
     'max_vel',           250, ...            % Maximum possible speed for coarse gating
     'max_acc',           1, ...              % Maximum possible acceleration for uncertainty estimation
-    'dist_thresh',       13.8, ...           % Mahanalobis distance threshold for fine gating
+    'dist_thresh',       Inf, ...13.8, ...           % Mahanalobis distance threshold for fine gating
     'miss_max',          5, ...              % Number of misses required to inactivate track
     'EKF',               false, ...          % T/F use extended Kalman filter
     'sigma_v',           [0.09, 0], ...       % XY target motion uncertainty 

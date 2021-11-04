@@ -77,10 +77,15 @@ for unit = 1:scenario.multi.n_re
         
     end
     
+    % Save single unit tracking
+    if scenario.simsetup.save_track_single
+        SaveTrackingSingle(scenario, unit);
+    end
+    
     % Post-process tracking
-%     if scenario.radarsetup.tracking_single.bi_single
-%         scenario = Tracking_SingleUnit_Bidirectional(scenario);
-%     end
+    if scenario.radarsetup.tracking_single.bi_single
+        scenario = Tracking_SingleUnit_Bidirectional(scenario);
+    end
     
     % Reset parameters for new unit
     unitReset(scenario);
@@ -121,21 +126,9 @@ else
 end
 
 % Visualize multilateration result
-% viewMultilateration(scenario);
+viewTrackingMulti(scenario);
 
 %% Results Processing
-
-% Save tracking data for offline processing
-% track_single = scenario.tracking_single;
-% track_multi = scenario.tracking_multi;
-% multi = scenario.multi;
-% traj = scenario.traj;
-% rs = scenario.radarsetup;
-% save(['Results/Tracking Results/', scenario.simsetup.filename, '.mat'], 'track_single', 'track_multi', 'multi', 'traj', 'rs');
-% track = [];
-% multi = [];
-% traj = [];
-% rs = [];
 
 % Estimate error of results
 % scenario.results = ErrorEstimation(scenario);

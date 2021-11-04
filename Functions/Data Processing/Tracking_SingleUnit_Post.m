@@ -10,6 +10,8 @@ multi = scenario.multi;
 rs = scenario.radarsetup;
 ts = rs.tracking_single;
 
+n_fr = multi.num_fr(unit);
+
 %% Initialize output object
 
 track_out = struct( ...
@@ -17,16 +19,16 @@ track_out = struct( ...
     'misses',       0, ...
     'hit_list',     track_in.hit_list, ...
     'meas',         {track_in.meas}, ...
-    'estimate',     {cell(multi.n_fr, 1)}, ...
-    'prediction',   {cell(multi.n_fr, 1)});
+    'estimate',     {cell(n_fr, 1)}, ...
+    'prediction',   {cell(n_fr, 1)});
 
 %% Target tracking
 
 % Determine pass direction
 if strcmp(passDirection, 'forward')
-    fr_ind = 1:multi.n_fr;
+    fr_ind = 1:n_fr;
 elseif strcmp(passDirection, 'reverse')
-    fr_ind = multi.n_fr:-1:1;
+    fr_ind = n_fr:-1:1;
 end
 
 % Loop through frames
@@ -47,7 +49,7 @@ for fr = fr_ind
     
     % Perform track filtering
     if track_out.isActive
-        track_out = KalmanFilter_SingleUnit(track_out, rs, ts, fr, passDirection);
+        track_out = KalmanFilter_SingleUnit(track_out, rs, ts, fr, multi.time{unit}(fr), passDirection);
     end
     
 end

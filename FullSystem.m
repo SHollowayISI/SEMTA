@@ -10,10 +10,9 @@
     TODO:
         - 8-connectivity for centroid algorithm
         - Asynchronous tracking
-            - Live tracking
-            - Post processing tracking
-            - Data fusion
             - Post processing server changes
+            - Live test w/ HTTP
+        - Rewrite error estimation
 %}
 
 %% Housekeeping, Timing, and Path Management

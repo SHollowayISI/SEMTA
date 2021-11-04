@@ -8,83 +8,58 @@ function [tracking_multi] = DataFusion(scenario)
 ts = scenario.tracking_single;
 rs = scenario.radarsetup;
 multi = scenario.multi;
+
+% Set up data structure
 tracking_multi = struct( ...
-    'num_detect',   zeros(multi.n_fr, 1), ...
     'state',        [], ...
     'var',          [], ...
-    'hit_list',     false(multi.n_fr, 1));
-tracking_multi.state = cell(multi.n_fr, 1);
-tracking_multi.var = cell(multi.n_fr, 1);
+    'time',         []);
 
-%% Perform data fusion
+%% Sort tracking data in time
 
-% Loop through frames
-for fr = 1:multi.n_fr
+% Aggregate list of times and receiver indices
+out_list = nan(0,3);
+for unit = 1:multi.n_re
     
-    % Initialize sums
-    num_detect = 0;
-    state_sum = 0;
-    var_sum = 0;
+    % Unpack time stamps
+    time_list = multi.time{unit};
     
-    % If limiting number of contributing receivers, make ordered list
-    if rs.tracking_single.limitSensorFusion && (multi.n_re > 1)
-        
-        % Loop through receivers to estimate variance
-        variance_measure = nan(multi.n_re, 1);
-        for re = 1:multi.n_re
-            
-            if ts{re}.hit_list(fr)
-                var = diag(ts{re}.estimate{fr}.covar);
-%                 variance_measure(re) = 1 ./ sum(1 ./ var([1 3]));
-                variance_measure(re) = sum(var([1 4]));
-            else
-                variance_measure(re) = Inf;
-            end
-        end
-        
-        % Determine sorted list
-        [~, I] = sort(variance_measure);
-        re_list = I(1:2);
-    else
-        re_list = 1:multi.n_re;
-    end
-    
-    % Loop through receivers
-    for re_ind = 1:length(re_list)
-        
-        re = re_list(re_ind);
-        
-        % Only add if receiver detected target
-        if ts{re}.hit_list(fr)
-            
-            % Unpack variables
-            est = ts{re}.estimate{fr};
-            state = est.state;
-            var = diag(est.covar);
-            
-            % Adjust for unit position
-            state(1) = state(1) + multi.radar_pos(1,re);
-            state(4) = state(4) + multi.radar_pos(2,re);
-            
-            % Update running sums
-            num_detect = num_detect + 1;
-            state_sum = state_sum + (state ./ var);
-            var_sum = var_sum + (1 ./ var);
-            
+    % Append time stamp, frame index, and unit index
+    for fr = 1:length(time_list)
+        if ts{unit}.hit_list(fr)
+            out_data = [time_list(fr), fr, unit];
+            out_list = [out_list; out_data];
         end
     end
+end
+
+% Generate sorted list
+detection_list = sortrows(out_list);
+n_fr = size(detection_list, 1);
+
+% Add data structures
+tracking_multi.state = cell(n_fr, 1);
+tracking_multi.var = cell(n_fr, 1);
+tracking_multi.time = nan(n_fr, 1);
+tracking_multi.num_fr = n_fr;
+
+%% Fuse list of detections
+
+% Loop through detection list
+for de = 1:n_fr
     
-    % If some data is collected
-    if num_detect > 0
-        
-        % Calculate results per frame
-        tracking_multi.num_detect(fr) = num_detect;
-        tracking_multi.state{fr} = state_sum ./ var_sum;
-        tracking_multi.var{fr} = diag(1 ./ var_sum);
-        tracking_multi.hit_list(fr) = true;
-        
-    end
+    % Get unit number and single unit frame number
+    re = detection_list(de,3);
+    fr = detection_list(de,2);
     
+    % Adjust for radar position
+    offset = [multi.radar_pos(1,re); 0; 0; multi.radar_pos(2,re); 0; 0];
+    
+    % Pass data to combined list
+    tracking_multi.state{de} = ts{re}.estimate{fr}.state + offset;
+    tracking_multi.var{de} = ts{re}.estimate{fr}.covar;
+    tracking_multi.time(de) = ts{re}.estimate{fr}.time;
+        
 end
 
 end

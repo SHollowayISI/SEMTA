@@ -1,6 +1,8 @@
 function [] = SaveTracking(scenario)
 %SAVETRACKING Saves tracking data to Python-compatible format
 %   Takes scenario as input, flattens to array data structure
+%
+%   NOTE: DEPRECATED AS OF ASYNCHRONOUS BRANCH
 
 %% Unpack variables
 
