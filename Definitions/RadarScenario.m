@@ -483,6 +483,9 @@ classdef RadarScenario < handle
             % Reset mode flag and initial angle
             rs.flags.mode = rs.radarsetup.initial_mode;
             rs.radarsetup.int_type = rs.radarsetup.modes.(rs.radarsetup.initial_mode).int_type;
+            rs.radarsetup.cpi_fr = rs.radarsetup.modes.(rs.radarsetup.initial_mode).num_cpi;
+            rs.radarsetup.frame_time = ...
+                rs.radarsetup.cpi_time * rs.radarsetup.cpi_fr;
             rs.flags.frame = 0;
         end
         
@@ -543,6 +546,8 @@ classdef RadarScenario < handle
             rs.multi.aoa = ...
                 cell(rs.multi.n_re,1);
             rs.multi.mode = ...
+                cell(rs.multi.n_re,1);
+            rs.multi.time = ...
                 cell(rs.multi.n_re,1);
             rs.tracking_single = ...
                 cell(rs.multi.n_re,1);

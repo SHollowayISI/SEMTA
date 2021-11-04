@@ -74,7 +74,7 @@ switch mode
                 % Predict next angle using tracking results
                 Tm = scenario.radarsetup.frame_time;
                 X = scenario.tracking_single{unit}.estimate{frame-1}.state;
-                angle_out = atand((X(1) + Tm*X(2)) / (X(3) + Tm*X(4)));
+                angle_out = atand((X(4) + Tm*X(5) + 0.5*Tm*Tm*X(6)) / (X(1) + Tm*X(2) + 0.5*Tm*Tm*X(3)));
             end 
         end
         
