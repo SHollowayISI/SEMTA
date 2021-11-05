@@ -8,6 +8,12 @@ track_in = scenario.tracking_single{unit};
 n_fr = scenario.multi.num_fr(unit);
 n_fr_hit = sum(track_in.hit_list);
 
+% Break if no detections
+if n_fr_hit == 0
+    fprintf('No detections found for unit %d. Skipping file save.\n', unit);
+    return;
+end
+
 %% Create top level structure
 
 track_out = struct( ...

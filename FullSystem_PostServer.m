@@ -6,15 +6,6 @@
     MATLAB Simulation & Processing
 
     This shell file runs successive scripts and gauges progress.
-
-    TODO:
-        - 8-connectivity for centroid algorithm
-        - Rewrite error estimation
-        - Python web dashboard
-        - Flask deployment server
-            - Secret key
-        - Modify parameters over web
-        - Live data decoding shell script
 %}
 
 %% Housekeeping, Timing, and Path Management
@@ -47,7 +38,7 @@ SetupRadarScenario
 %% Run Simulation
 
 % Perform main loop of simulation, signal and data processing
-Main
+Main_PostServer
 
 %% Save Figures and Data
 

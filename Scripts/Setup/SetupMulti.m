@@ -31,7 +31,7 @@ radar_pos = ...
                           zeros(1,num_receivers)];       % Constant z elevation
                       
 % Timing setup
-simulation_time = 10;                   % Amount of time to simulate, in seconds
+simulation_time = 0.5;                   % Amount of time to simulate, in seconds
 timing_jitter = 0.0512;                    % Maximum random deviation between unit frame times
 
 % Multistatic properties
