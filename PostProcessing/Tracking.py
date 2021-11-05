@@ -276,6 +276,9 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
     # Fuse data for each frame
     for fr in range(numFr):
 
+        # Get current time
+        currentTime = trackForward['meas']['time'][fr]
+
         # Unpack structures
         estF = trackForward['estimate'][fr]
         estR = trackReverse['estimate'][fr]
@@ -289,19 +292,20 @@ def TrackingSingleUnitBidirectional(trackSingleIn, trackParams):
 
         # Save data back to struct
         trackEstimate[fr] = dict(
-            state = stateNew,
-            covar = varNew,
-            cart = [stateNew[i] for i in [0, 3]],
-            az = np.arctan(stateNew[3] / stateNew[0]) * 180 / np.pi,
-            range = np.linalg.norm([stateNew[i] for i in [0, 3]]),
-            speed = np.linalg.norm([stateNew[i] for i in [1, 4]])
+            state   = stateNew,
+            covar   = varNew,
+            cart    = [stateNew[i] for i in [0, 3]],
+            az      = np.arctan(stateNew[3] / stateNew[0]) * 180 / np.pi,
+            range   = np.linalg.norm([stateNew[i] for i in [0, 3]]),
+            speed   = np.linalg.norm([stateNew[i] for i in [1, 4]]),
+            time    = currentTime
         )
             
     # Return data structure
     return trackEstimate
 
 # Multi unit data fusion
-def DataFusion(trackSingleIn, trackParams):
+def DataFusion(trackSingleIn):
 
     # Unpack variables
     numRx = len(trackSingleIn)
@@ -317,72 +321,44 @@ def DataFusion(trackSingleIn, trackParams):
         prediction       = [None]*numFr,
         meas_estimate    = [None]*numFr,
         meas_prediction  = [None]*numFr,
-        bi_hit_list      = [False]*numFr,
-        hit_list         = [False]*numFr,
-        hit_list_out     = [True]*numFr
+        time             = [None]*numFr,
+        numFr            = numFr
     )
 
-    # Loop through frames
-    for fr in range(numFr):
+    # Aggregate list of times and receiver indices
+    outList = []
+    for unit in range(numRx):
+
+        # Access list of time stamps
+        timeList = trackSingleIn[unit]['meas']['time']
+
+        # Append time stamp, frame index, and unit index to list
+        outData = [(timeList[fr], fr, unit) for fr in range(len(timeList))]
+        outList += outData
+
+    # Sort list by timestamp
+    detectionList = sorted(outList, key = lambda x: x[0])
+
+    # Loop through detections
+    for de in range(numFr):
+
+        # Get unit and frame
+        (deTime, deFrame, deUnit) = detectionList[de]
+
+        # Calculate state offset
+        radarPos = trackSingleIn[deUnit]['radar_pos']
+        offset = np.matrix([[radarPos[0][0]],[0],[0],[radarPos[1][0]],[0],[0]])
+
+        # Get state and variance information
+        newState = trackSingleIn[deUnit]['estimate'][deFrame]['state'] + offset
+        newCovar = trackSingleIn[deUnit]['estimate'][deFrame]['covar']
 
         # Initialize single frame data structure
-        trackingMulti['meas_estimate'][fr] = dict(
-            numDetect = 0,
-            state   = None,
-            covar     = None)
-
-        # Initialize sums
-        numDetect, stateSum, varSum = (0, 0, 0)
-
-        # If limiting number of contributing receivers, make orderedlist
-        if trackParams['limitSensorFusion'] and numRx > 1:
-
-            # Loop through receivers to estimate variance
-            varianceMeasure = [None]*numRx
-            for rx in range(numRx):
-
-                if trackSingleIn[rx]['hit_list'][fr]:
-                    var = np.diag(trackSingleIn[rx]['estimate'][fr]['covar'])
-                    varianceMeasure[rx] = var[0] + var[3]
-                else:
-                    varianceMeasure[rx] = np.inf
-
-            # Determine sorted list
-            rxList = np.argpartition(varianceMeasure, 2)[:2]
-        
-        else:
-            rxList = range(numRx)
-
-        # Loop through receivers
-        for rx in range(numRx):
-
-            # Only add if receiver detected target
-            if trackSingleIn[rx]['hit_list'][fr]:
-
-                # Unpack variables
-                est = trackSingleIn[rx]['estimate'][fr]
-                state = est['state']
-                var = np.diag(est['covar'])
-
-                # Adjust for unit position
-                state[0] += radarPos[0][rx]
-                state[3] += radarPos[1][rx]
-
-                if rx in rxList:
-
-                    # Update running sums
-                    numDetect += 1
-                    stateSum += state / np.asmatrix(var).T
-                    varSum += 1 / var
-
-        # If some data is collected
-        if numDetect > 0:
-
-            # Calculate results per frame
-            trackingMulti['meas_estimate'][fr]['numDetect'] = numDetect
-            trackingMulti['meas_estimate'][fr]['state'] = stateSum / np.asmatrix(varSum).T
-            trackingMulti['meas_estimate'][fr]['covar'] = np.diag(1 / varSum)
-            trackingMulti['hit_list'][fr] = True
+        trackingMulti['meas_estimate'][de] = dict(
+            state       = newState,
+            covar       = newCovar,
+            time        = deTime)
+        trackingMulti['time'][de] = deTime
 
     # Return data structure
     return trackingMulti
@@ -391,7 +367,7 @@ def DataFusion(trackSingleIn, trackParams):
 def TrackingMulti(trackMultiIn, trackParams, passDirection):
 
     # Unpack variables
-    numFr = trackParams['numFr']
+    numFr = trackMultiIn['numFr']
 
     # Generate frame list
     if passDirection == 'forward':
@@ -402,51 +378,31 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
     # Set up field
     trackMultiIn[passDirection] = dict(
         estimate     = [None]*numFr,
-        prediction   = [None]*numFr,
-        hit_list     = [True]*numFr)
+        prediction   = [None]*numFr)
 
 
     # Loop through frames
     for fr in frList:
-        
-        # Determine previous successful measurement
-        if passDirection == 'forward':
-            if fr > 0:
-                hit_ind = np.argwhere(trackMultiIn['hit_list'][:fr])
-                hit_ind = hit_ind[np.where((fr - hit_ind) <= (trackParams['miss_max']+1))]
-            else:
-                hit_ind = np.matrix([])
-        elif passDirection == 'reverse':
-            if fr < numFr-1:
-                hit_ind = np.flip(fr + np.argwhere(trackMultiIn['hit_list'][(fr+1):]) + 1)
-                hit_ind = hit_ind[np.where((hit_ind - fr) <= (trackParams['miss_max']+1))]
-            else:
-                hit_ind = np.matrix([])
 
         # Check if track needs to be initialized
-        if hit_ind.size == 0:
+        if (passDirection == 'forward' and fr == 0) or (passDirection == 'reverse' and fr == numFr-1):
 
-            # Save measurement if taken
-            if trackMultiIn['hit_list'][fr]:
+            # Use measurement as state prediction
+            X_init = trackMultiIn['meas_estimate'][fr]['state']
+            P_init = trackMultiIn['meas_estimate'][fr]['covar']
 
-                # Use measurement as state prediction
-                X_init = trackMultiIn['meas_estimate'][fr]['state']
-                P_init = trackMultiIn['meas_estimate'][fr]['covar']
-
-                # Save results
-                trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_init, P_init, X_init, P_init)
-                continue
-
-            else:
-
-                # Set output hit list
-                trackMultiIn[passDirection]['hit_list'][fr] = False
+            # Save results
+            trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_init, P_init, X_init, P_init, trackMultiIn['time'][fr])
+            continue
 
         else:
 
             # Calculate time step since previous hit
-            lastHitFrame = hit_ind[-1]
-            Tm = trackParams['frame_time'] * (fr - lastHitFrame)
+            if passDirection == 'forward':
+                lastHitFrame = fr-1
+            else:
+                lastHitFrame = fr+1
+            Tm = trackMultiIn['time'][fr] - trackMultiIn['time'][lastHitFrame]
 
 
             ## Calculate Model Matrices
@@ -481,11 +437,6 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             # Predicted kinematic covariance
             P_pre = (F * (np.asmatrix(trackMultiIn[passDirection]['estimate'][lastHitFrame]['covar'])* F.T)) + Q
 
-            # Save prediction as estimate if measurement not taken
-            if not trackMultiIn[passDirection]['hit_list'][fr]:
-                trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_pre, P_pre, X_pre, P_pre)
-                continue
-
             ## Calculate measurement matrices
 
             # Measurement vector
@@ -513,7 +464,7 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
             P_est = P_pre - (K * (H * P_pre))
 
             # Save data
-            trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_est, P_est, X_pre, P_pre)
+            trackMultiIn[passDirection] = SaveStepData(trackMultiIn[passDirection], fr, X_est, P_est, X_pre, P_pre, trackMultiIn['time'][fr])
 
     return trackMultiIn
 
@@ -521,13 +472,12 @@ def TrackingMulti(trackMultiIn, trackParams, passDirection):
 def TrackingMultiBidirectional(trackMultiIn, trackParams):
 
     # Unpack variables
-    numFr = trackParams['numFr']
+    numFr = trackMultiIn['numFr']
 
     # Run forward and backwards pass of tracking
     trackMultiIn = TrackingMulti(trackMultiIn, trackParams, 'forward')
     trackMultiIn = TrackingMulti(trackMultiIn, trackParams, 'reverse')
-    hit_list = [f & r for f, r in zip(trackMultiIn['forward']['hit_list'], trackMultiIn['reverse']['hit_list'])]
-
+    
     # Loop through frames
     for fr in range(numFr):
 
@@ -535,42 +485,21 @@ def TrackingMultiBidirectional(trackMultiIn, trackParams):
         estF = trackMultiIn['forward']['estimate'][fr]
         estR = trackMultiIn['reverse']['estimate'][fr]
 
-        if hit_list[fr]:
+        # Perform inverse variance weighting
+        varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
+        stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
 
-            # Perform inverse variance weighting
-            varSum = np.asmatrix((1 / np.diagonal(estF['covar'])) + (1 / np.diagonal(estR['covar']))).T
-            stateSum = (estF['state'] / np.asmatrix(np.diagonal(estF['covar'])).T) + (estR['state'] / np.asmatrix(np.diagonal(estR['covar'])).T)
+        varNew = np.diag((1 / varSum.T).tolist()[0])
+        stateNew = stateSum / varSum
 
-            varNew = np.diag((1 / varSum.T).tolist()[0])
-            stateNew = stateSum / varSum
+        # Save data back to struct
+        trackMultiIn['estimate'][fr] = dict(
+            state = stateNew,
+            covar = varNew,
+            pos   = [stateNew[i] for i in [0, 3]],
+            vel   = [stateNew[i] for i in [1, 4]])
 
-            # Save data back to struct
-            trackMultiIn['estimate'][fr] = dict(
-                state = stateNew,
-                covar = varNew,
-                pos   = [stateNew[i] for i in [0, 3]],
-                vel   = [stateNew[i] for i in [1, 4]])
-
-        elif trackMultiIn['forward']['hit_list'][fr]:
-
-            # Save only forward results
-            trackMultiIn['estimate'][fr] = dict(
-                state = estF['state'],
-                covar = estF['covar'],
-                pos   = [estF['state'][i] for i in [0, 3]],
-                vel   = [estF['state'][i] for i in [1, 4]])
-
-        elif trackMultiIn['reverse']['hit_list'][fr]:
-
-            # Save only forward results
-            trackMultiIn['estimate'][fr] = dict(
-                state = estR['state'],
-                covar = estR['covar'],
-                pos   = [estR['state'][i] for i in [0, 3]],
-                vel   = [estR['state'][i] for i in [1, 4]])
-
-    # Generate new detection list
-    trackMultiIn['bi_hit_list'] = [f | r for f, r in zip(trackMultiIn['forward']['hit_list'], trackMultiIn['reverse']['hit_list'])]
+    # Return data structure
     return trackMultiIn
 
 
@@ -593,22 +522,28 @@ def ProcessFiles(foldername):
 
     ### Read input data ###
 
+    # Get file directories
+    dirPath = os.path.dirname(os.path.realpath(__file__))
+    inputPath = os.path.join(dirPath, 'Input', foldername)
+    outputPath = os.path.join(dirPath, 'Output', foldername)
+
     # Discover files in directory 
     dataIn = []
-    for filename in os.listdir(foldername):
-        fullFilename = os.path.join(foldername, filename)
+    for filename in sorted(os.listdir(inputPath)):
+        fullFilename = os.path.join(inputPath, filename)
         mat = sio.loadmat(fullFilename)
         dataIn.append(mat['track_out'][0][0])
     numFiles = len(dataIn)
 
     # Unpack .mat file
     matKeys = {'range', 'vel', 'SNR', 'az', 'steer', 'radar_pos', 'time', 'n_fr'}
-    trackData = [dict()]*numFiles
+    trackData = [None]*numFiles
 
     # Set up new data structure
-    for idx, unitData in enumerate(dataIn):
+    for idx in range(numFiles):
+        trackData[idx] = dict()
         for key in matKeys:
-            trackData[idx][key] = unitData[key]
+            trackData[idx][key] = dataIn[idx][key]
 
 
 
@@ -640,38 +575,34 @@ def ProcessFiles(foldername):
     ### Multistatic processing ###
 
     # Run data fusion
-    trackingMulti = DataFusion(trackSingle, trackParams)
+    trackingMulti = DataFusion(trackSingle)
 
-    return
-
-    # Multistatic tracking
+    # Perform multistatic tracking
     trackingMulti = TrackingMultiBidirectional(trackingMulti, trackParams)
+
+
 
     ### Results processing ###
 
-    # Create output folder if it doesn't exist
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    saveFolder = dir_path + '/Output'
-    if not os.path.exists(saveFolder):
-        os.makedirs(saveFolder)
+    # Get number of frames from data structure
+    numFr = trackingMulti['numFr']
 
-    # Collect filename without path or extension
-    rawFilename = filename.replace("\\","/").split('/')[-1]
-    rawFilename = rawFilename.split('.')[0]
+    # Create general output folder if it doesn't exist
+    if not os.path.exists(os.path.join(dirPath, 'Output')):
+        os.makedirs(os.path.join(dirPath, 'Output'))
 
-    # Create folder for CSVs
-    saveFolder = saveFolder + '/' + rawFilename
-    if not os.path.exists(saveFolder):
-        os.makedirs(saveFolder)
+    # Create specific output folder
+    if not os.path.exists(outputPath):
+        os.makedirs(outputPath)
     
     # Generate result matrix
     positionEstimate = [None]*numFr
     for fr in range(numFr):
-        positionEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(el) for el in trackingMulti['estimate'][fr]['pos']]
+        positionEstimate[fr] = [fr+1] + [trackingMulti['time'][fr]] + [float(el) for el in trackingMulti['estimate'][fr]['pos']]
 
 
     # Save multistatic results
-    with open(saveFolder + '/multi.csv', mode='w', newline='') as csv_out:
+    with open(outputPath + '/multi.csv', mode='w', newline='') as csv_out:
         csvWriter = csv.writer(csv_out, delimiter=',', quotechar='"')
         csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
         csvWriter.writerows(positionEstimate)
@@ -686,33 +617,26 @@ def ProcessFiles(foldername):
     plt.grid()
     plt.xlim(xlims)
     plt.ylim(ylims)
-    plt.savefig(saveFolder + '/multi.png')
+    plt.savefig(outputPath + '/multi.png')
     plt.close()
 
     # Save single unit results
-    for rx in range(numRx):
-        with open(saveFolder + '/single' + str(rx+1) + '.csv', mode='w', newline='') as csv_out:
+    for rx in range(numFiles):
+        with open(outputPath + '/single' + str(rx+1) + '.csv', mode='w', newline='') as csv_out:
             
+            # Align data for CSV input
+            numFr = trackSingle[rx]['n_fr']
             singleEstimate = [None]*numFr
             for fr in range(numFr):
-                
-                if trackSingle[rx]['hit_list'][fr]:
-                    singleEstimate[fr] = [fr+1] + [trackParams['frame_time']*(fr+0.5)] + [float(trackSingle[rx]['estimate'][fr]['cart'][0])] + [float(trackSingle[rx]['estimate'][fr]['cart'][1])]
-                    if np.isnan(singleEstimate[fr][-1]):
-                        singleEstimate[fr] = [fr+1, trackParams['frame_time']*(fr+0.5), '', '']
-                
-                else:
-                    singleEstimate[fr] = [fr+1, trackParams['frame_time']*(fr+0.5), '', '']
-            
+                singleEstimate[fr] = [fr+1] \
+                + [trackSingle[rx]['estimate'][fr]['time']] \
+                + [float(trackSingle[rx]['estimate'][fr]['cart'][0] + trackSingle[rx]['radar_pos'][0])] \
+                + [float(trackSingle[rx]['estimate'][fr]['cart'][1] + trackSingle[rx]['radar_pos'][1])]
+
+            # Write to CSV file
             csvWriter = csv.writer(csv_out, delimiter=',', quotechar='"')
             csvWriter.writerow(('Frame Number', 'Frame Time', 'Cross-Range Position', 'Down-Range Position'))
             csvWriter.writerows(singleEstimate)
-
-            # Convert nan types for plotting
-            for frame in singleEstimate:
-                if frame[-1] == '':
-                    frame[-1] = np.nan
-                    frame[-2] = np.nan
 
             # Plot single unit results
             data = np.array(singleEstimate)
@@ -722,8 +646,8 @@ def ProcessFiles(foldername):
             plt.grid()
             plt.xlim(xlims)
             plt.ylim(ylims)
-            plt.savefig(saveFolder + '/single' + str(rx+1) + '.png')
+            plt.savefig(outputPath + '/single' + str(rx+1) + '.png')
             plt.close()
 
 if __name__ == '__main__':
-    ProcessFiles('/home/sholloway/Documents/GitHub/SEMTA/PostProcessing/Input/AsyncTracking')
+    ProcessFiles('AsyncTracking')

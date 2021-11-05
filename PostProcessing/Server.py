@@ -13,8 +13,6 @@ uploadFolder = os.path.join(dir_path, 'Input')
 if not os.path.exists(uploadFolder):
     os.makedirs(uploadFolder)
 
-print(uploadFolder)
-
 # Set up flask server
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = uploadFolder
@@ -65,7 +63,7 @@ def uploadFile():
         file.save(filepath)
 
         try:
-            Tracking.ProcessFile(filepath)
+            Tracking.ProcessFiles(str(testID))
         except Exception as e:
             # Remove failed file
             os.remove(filepath)
