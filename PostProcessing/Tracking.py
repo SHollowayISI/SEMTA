@@ -653,6 +653,3 @@ def ProcessFiles(foldername):
             plt.ylim(ylims)
             plt.savefig(os.path.join(outputPath, filenameList[rx] + '.png'))
             plt.close()
-
-if __name__ == '__main__':
-    ProcessFiles('AsyncTracking')
