@@ -4,5 +4,10 @@
 /Old/
 /Other Files/*
 /Parsed Data/*
-/Scratch/
+/Scratch/*
 Scratch.m
+/Results/Tracking
+/PostProcessing/__pycache__
+/PostProcessing/Input
+/PostProcessing/Output
+/PostProcessing/.venv
