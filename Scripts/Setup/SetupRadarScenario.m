@@ -83,7 +83,7 @@ static_mode = struct( ...
 
 % Search mode properties
 search_mode = struct( ...
-    'init_angle',   12.5, ...             % Initial angle
+    'init_angle',   45, ...             % Initial angle
     'search_step',  -5, ...             % Angle delta per dwell, in degrees
     'search_max',   45, ...             % Maximum angle for search mode
     'int_type',     'binary', ...       % Integration type for search mode
