@@ -529,10 +529,15 @@ def ProcessFiles(foldername):
 
     # Discover files in directory 
     dataIn = []
-    for filename in sorted(os.listdir(inputPath)):
+    fileList = sorted(os.listdir(inputPath))
+    filenameList = [name.split('.')[0] for name in fileList]
+
+    for filename in fileList:
         fullFilename = os.path.join(inputPath, filename)
         mat = sio.loadmat(fullFilename)
-        dataIn.append(mat['track_out'][0][0])
+        trackOut = mat['track_out'][0][0]
+        dataIn.append(trackOut)
+
     numFiles = len(dataIn)
 
     # Unpack .mat file
@@ -562,10 +567,10 @@ def ProcessFiles(foldername):
                 meas[key] = np.array([val[0] for val in trackData[rx][key]])
 
         trackSingle[rx] = dict(
-            radar_pos = trackData[rx]['radar_pos'],
-            n_fr = trackData[rx]['n_fr'][0][0],
-            meas = meas,
-            estimate = [])
+            radar_pos   = trackData[rx]['radar_pos'],
+            n_fr        = trackData[rx]['n_fr'][0][0],
+            meas        = meas,
+            estimate    = [])
         
         # Pass to function
         trackSingle[rx]['estimate'] = TrackingSingleUnitBidirectional(trackSingle[rx], trackParams)
@@ -622,7 +627,7 @@ def ProcessFiles(foldername):
 
     # Save single unit results
     for rx in range(numFiles):
-        with open(outputPath + '/single' + str(rx+1) + '.csv', mode='w', newline='') as csv_out:
+        with open(os.path.join(outputPath, filenameList[rx] + '.csv'), mode='w', newline='') as csv_out:
             
             # Align data for CSV input
             numFr = trackSingle[rx]['n_fr']
@@ -646,7 +651,7 @@ def ProcessFiles(foldername):
             plt.grid()
             plt.xlim(xlims)
             plt.ylim(ylims)
-            plt.savefig(outputPath + '/single' + str(rx+1) + '.png')
+            plt.savefig(os.path.join(outputPath, filenameList[rx] + '.png'))
             plt.close()
 
 if __name__ == '__main__':

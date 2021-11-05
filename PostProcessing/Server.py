@@ -40,8 +40,6 @@ def uploadFile():
         if file.filename == '':
             return 'ERROR: No file attached.', 400
 
-        print(request.form.keys())
-
         # Check if test ID is included in form
         if 'test_id' not in request.form:
             return 'ERROR: Test identifier not specified', 400
